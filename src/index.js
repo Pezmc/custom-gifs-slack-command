@@ -5,6 +5,7 @@ const { join } = require('path')
 const bodyParser = require('body-parser')
 const log = require('debug-level').log('custom-gifs-slack:index')
 const express = require('express')
+const exphbs = require('express-handlebars')
 const weightedRandom = require('weighted-random')
 
 const Gifs = require('./gifs')
@@ -35,6 +36,13 @@ const scaleBetween = (array, scaledMin, scaledMax) => {
   )
 }
 
+const groupBy = function (xs, key) {
+  return xs.reduce(function (rv, x) {
+    ;(rv[x[key]] = rv[x[key]] || []).push(x)
+    return rv
+  }, {})
+}
+
 if (!process.env.SLACK_SIGNING_SECRET) {
   throw new Error(
     'SLACK_SIGNING_SECRET must be set in .env (see Basic Information page in Slack app config)'
@@ -46,16 +54,18 @@ const GIFS_PATH_FULL = join(__dirname, GIFS_PATH)
 
 const gifs = new Gifs(GIFS_PATH_FULL)
 
+app.engine('handlebars', exphbs())
+app.set('view engine', 'handlebars')
+
 app.use(bodyParser.urlencoded({ verify: rawBodyBuffer, extended: true }))
 app.use(bodyParser.json({ verify: rawBodyBuffer }))
 
 app.use('/gifs', express.static(GIFS_PATH_FULL))
 
-app.get('/', (req, res) => {
-  res.send(
-    '<h2>The Slash Command and Dialog app is running</h2> <p>Follow the' +
-      ' instructions in the README to configure the Slack App and your environment variables.</p>'
-  )
+app.get('/', async (req, res) => {
+  const { gifs: availableGifs } = await gifs.getGifsAndSearcher()
+
+  res.render('home', { categories: groupBy(availableGifs, 'category') })
 })
 
 /*

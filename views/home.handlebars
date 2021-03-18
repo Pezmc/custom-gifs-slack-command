@@ -1,0 +1,22 @@
+<h1>Custom Gifs for Slack</h1>
+
+<h2>Usage</h2>
+
+<h3>/gifc [search terms]</h3>
+
+<h2>Available Gifs</h2>
+
+
+{{#each categories}}
+  {{log  this}}
+  <h3>{{@key}}</h3>
+
+  <ul>
+    {{#each this}}
+      <li>
+        <h4>{{name}}</h4>
+        <img src="./gifs/{{path}}" />
+      </li>
+    {{/each}}
+  </ul>
+{{/each}}
