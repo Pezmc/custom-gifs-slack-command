@@ -1,0 +1,32 @@
+{
+  "name": "custom-gifs-slack-command",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Sample Slack app that responds to an Slack slash command with an interactive message",
+  "license": "UNLICENSED",
+  "author": "Pez Cuckow",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "DEBUG=slash-command-template node src/index.js",
+    "dev": "nodemon src/index.js"
+  },
+  "dependencies": {
+    "axios": "^0.21.1",
+    "body-parser": "^1.19.0",
+    "debug": "^3.2.7",
+    "dotenv": "^4.0.0",
+    "express": "^4.17.1",
+    "tsscmp": "^1.0.6"
+  },
+  "devDependencies": {
+    "nodemon": "^1.19.4"
+  },
+  "engines": {
+    "node": ">=14.15.0",
+    "yarn": ">=1.22.10"
+  },
+  "authors": [
+    "Pez Cuckow <email@pezcuckow.com>"
+  ]
+}
