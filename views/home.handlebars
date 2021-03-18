@@ -1,3 +1,26 @@
+<style>
+  ul {
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    padding: 0;
+  }
+
+  ul li {
+    display: block;
+    position: relative;
+    max-width: 30%;
+    margin: 10px;
+    flex-shrink: 1;
+    flex-basis: 0;
+    flex: 1 0 21%; /* explanation below */
+  }
+
+  img {
+    width: 100%;
+  }
+</style>
+
 <h1>Custom Gifs for Slack</h1>
 
 <h2>Usage</h2>
@@ -5,7 +28,6 @@
 <h3>/gifc [search terms]</h3>
 
 <h2>Available Gifs</h2>
-
 
 {{#each categories}}
   {{log  this}}
