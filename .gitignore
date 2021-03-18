@@ -1,9 +1,29 @@
-node_modules/
-.DS_Store
-Thumbs.db
-.idea/
-.vscode/
-*.sublime-project
-*.sublime-workspace
+## Other
+# Logs
 *.log
-package-lock.json
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# dotenv environment variables file
+.env
+.env.test
+
+# editors
+*.sublime-*
+*.swp
+
+## JavaScript
+# Dependency directories
+node_modules/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Yarn
+.yarn-integrity
