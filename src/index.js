@@ -1,11 +1,10 @@
 require('dotenv').config()
 
-const express = require('express')
 const bodyParser = require('body-parser')
-const signature = require('./verifySignature')
-const api = require('./api')
-const payloads = require('./payloads')
 const debug = require('debug')('slash-command-template:index')
+const express = require('express')
+
+const signature = require('./verifySignature')
 
 const app = express()
 
@@ -27,7 +26,7 @@ app.use(bodyParser.json({ verify: rawBodyBuffer }))
 app.get('/', (req, res) => {
   res.send(
     '<h2>The Slash Command and Dialog app is running</h2> <p>Follow the' +
-      ' instructions in the README to configure the Slack App and your environment variables.</p>',
+      ' instructions in the README to configure the Slack App and your environment variables.</p>'
   )
 })
 
@@ -43,11 +42,10 @@ app.post('/command', async (req, res) => {
   }
 
   // extract the slash command text, and trigger ID from payload
-  const { trigger_id } = req.body
+  //const { trigger_id } = req.body
 
-  let result = await api.callAPIMethod('views.open', view)
+  console.log(req.body)
 
-  debug('views.open: %o', result)
   return res.send('')
 })
 
@@ -55,6 +53,6 @@ const server = app.listen(process.env.PORT || 5000, () => {
   console.log(
     'Express server listening on port %d in %s mode',
     server.address().port,
-    app.settings.env,
+    app.settings.env
   )
 })

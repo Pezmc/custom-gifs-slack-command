@@ -1,10 +1,11 @@
-const axios = require('axios')
 const qs = require('querystring')
+
+const axios = require('axios')
 const apiUrl = 'https://slack.com/api'
 
 const callAPIMethod = async (method, payload) => {
-  let data = Object.assign({ token: process.env.SLACK_ACCESS_TOKEN }, payload)
-  let result = await axios.post(`${apiUrl}/${method}`, qs.stringify(data))
+  const data = Object.assign({ token: process.env.SLACK_ACCESS_TOKEN }, payload)
+  const result = await axios.post(`${apiUrl}/${method}`, qs.stringify(data))
   return result.data
 }
 

@@ -1,8 +1,8 @@
 module.exports = {
   root: true,
   env: {
-    browser: true,
     es2021: true,
+    node: true,
   },
   extends: [
     'eslint:recommended',
@@ -14,18 +14,6 @@ module.exports = {
     ecmaVersion: 12,
     sourceType: 'module',
   },
-  overrides: [
-    // node
-    {
-      files: ['.eslintrc.js', '.prettierrc.js'],
-      env: {
-        node: true,
-      },
-      rules: {
-        'no-console': 'off',
-      },
-    },
-  ],
   rules: {
     // eslint - styles
     'linebreak-style': ['error', 'unix'],

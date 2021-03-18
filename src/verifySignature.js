@@ -1,4 +1,5 @@
 const crypto = require('crypto')
+
 const timingSafeCompare = require('tsscmp')
 
 const isVerified = (req) => {
