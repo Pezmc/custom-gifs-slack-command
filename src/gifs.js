@@ -1,3 +1,5 @@
+const { promises: fs } = require('fs')
+const { join } = require('path')
 const { inspect } = require('util')
 
 const Fuse = require('fuse.js')
@@ -63,6 +65,30 @@ const categoryTags = {
   working: ['busy', 'programming'],
 }
 
+const checkForBigGifs = (root, gifsInfo) => {
+  const tasks = gifsInfo.map((gifInfo) =>
+    fs.stat(join(root, gifInfo.path)).then((stats) => {
+      return {
+        gifInfo,
+        stats,
+      }
+    })
+  )
+
+  Promise.all(tasks).then((values) => {
+    const bigGifs = values.filter((file) => file.stats.size > 2 * 1024 * 1024)
+
+    bigGifs.forEach((file) => {
+      const sizeMB = file.stats.size / (1024 * 1024)
+      const roundedSizeMB = Math.round(sizeMB * 100) / 100
+      console.warn(
+        `Warning: ${file.gifInfo.path} is over 2MB at ${roundedSizeMB}MB.`,
+        `It won't auto-expand on slack, it's suggested that you compress it.`
+      )
+    })
+  })
+}
+
 const loadsGifs = async (path) => {
   console.info('Looking for gifs in ', path)
   const gifs = await glob('/**/*.gif', { root: path })
@@ -93,6 +119,9 @@ const loadsGifs = async (path) => {
     }
   })
 
+  checkForBigGifs(path, gifsInfo)
+
+  console.info(`Loaded ${gifsInfo.length} gifs`)
   console.debug(
     'Found the following gifs',
     inspect(gifsInfo, { depth: null, colors: true })
