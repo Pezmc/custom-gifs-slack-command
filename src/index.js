@@ -20,6 +20,12 @@ const rawBodyBuffer = (req, res, buf, encoding) => {
   }
 }
 
+if (!process.env.SLACK_SIGNING_SECRET) {
+  throw new Error(
+    'SLACK_SIGNING_SECRET must be set in .env (see Basic Information page in Slack app config)'
+  )
+}
+
 app.use(bodyParser.urlencoded({ verify: rawBodyBuffer, extended: true }))
 app.use(bodyParser.json({ verify: rawBodyBuffer }))
 
