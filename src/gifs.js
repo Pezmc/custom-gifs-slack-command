@@ -2,6 +2,7 @@ const { promises: fs } = require('fs')
 const { join } = require('path')
 const { inspect } = require('util')
 
+const log = require('debug-level').log('custom-gifs-slack:gifs')
 const Fuse = require('fuse.js')
 const glob = require('glob-promise')
 const findSymonyms = require('synonyms')
@@ -81,7 +82,7 @@ const checkForBigGifs = (root, gifsInfo) => {
     bigGifs.forEach((file) => {
       const sizeMB = file.stats.size / (1024 * 1024)
       const roundedSizeMB = Math.round(sizeMB * 100) / 100
-      console.warn(
+      log.warn(
         `Warning: ${file.gifInfo.path} is over 2MB at ${roundedSizeMB}MB.`,
         `It won't auto-expand on slack, it's suggested that you compress it.`
       )
@@ -90,7 +91,7 @@ const checkForBigGifs = (root, gifsInfo) => {
 }
 
 const loadsGifs = async (path) => {
-  console.info('Looking for gifs in ', path)
+  log.info('Looking for gifs in ', path)
   const gifs = await glob('/**/*.gif', { root: path })
 
   const gifsInfo = gifs.map((fullPath) => {
@@ -121,8 +122,8 @@ const loadsGifs = async (path) => {
 
   checkForBigGifs(path, gifsInfo)
 
-  console.info(`Loaded ${gifsInfo.length} gifs`)
-  console.debug(
+  log.info(`Loaded ${gifsInfo.length} gifs`)
+  log.debug(
     'Found the following gifs',
     inspect(gifsInfo, { depth: null, colors: true })
   )

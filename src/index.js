@@ -3,7 +3,7 @@ require('dotenv').config()
 const { join } = require('path')
 
 const bodyParser = require('body-parser')
-const debug = require('debug')('slash-command-template:index')
+const log = require('debug-level').log('custom-gifs-slack:index')
 const express = require('express')
 const weightedRandom = require('weighted-random')
 
@@ -65,27 +65,27 @@ app.get('/', (req, res) => {
 app.post('/command', async (req, res) => {
   // Verify the signing secret
   if (!signature.isVerified(req)) {
-    debug('Verification token mismatch')
+    log.warn('Verification token mismatch')
     return res.status(404).send()
   }
 
   // extract the slash command text, and trigger ID from payload
   const { text } = req.body
 
-  console.log('Searching for', text)
+  log.debug('Searching for', text)
   const matches = await gifs.search(text)
 
   const goodMatches = matches.filter((match) => match.score <= 0.25)
 
   if (!goodMatches.length) {
-    console.log('No matches found')
+    log.info(`No matches found for "${text}"`)
     return res.send({
       response_type: 'ephemeral',
       text: 'Sorry, no good matches were found, try another search',
     })
   }
 
-  console.info(`Good matches for ${text}: ${goodMatches.length}`)
+  log.info(`Good matches for ${text}: ${goodMatches.length}`)
 
   const bestMatches = matches.splice(0, 3)
 
@@ -98,17 +98,16 @@ app.post('/command', async (req, res) => {
     bestMatches.push(goodMatches[index])
     index++
   }
-  console.info(`Best matches for ${text}: ${bestMatches.length}`)
-  console.debug('Matches', bestMatches)
+  log.info(`Best matches for ${text}: ${bestMatches.length}`)
+  log.debug('Matches', bestMatches)
 
   const weights = bestMatches.map((match) => match.score * 100)
   const normalisedWeights = scaleBetween(weights, 100, 0)
-  console.debug('Weights', 'raw', weights, 'normalized', normalisedWeights)
+  log.debug('Weights', 'raw', weights, 'normalized', normalisedWeights)
 
   const chosenIndex = weightedRandom(normalisedWeights)
-  console.log(chosenIndex)
   const chosenGif = bestMatches[chosenIndex].item
-  console.debug('Chose gif', chosenIndex, chosenGif)
+  log.debug('Chose gif', chosenIndex, chosenGif)
 
   const hostname = req.protocol + '://' + req.get('host')
 
@@ -125,7 +124,7 @@ app.post('/command', async (req, res) => {
 })
 
 const server = app.listen(process.env.PORT || 5000, () => {
-  console.log(
+  log.log(
     'Express server listening on port %d in %s mode',
     server.address().port,
     app.settings.env
