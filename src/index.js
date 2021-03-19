@@ -9,40 +9,12 @@ const exphbs = require('express-handlebars')
 const weightedRandom = require('weighted-random')
 
 const Gifs = require('./gifs')
+const { rawBodyBuffer, groupBy, scaleBetween } = require('./utils')
 const signature = require('./verifySignature')
 
 const app = express()
 
-/*
- * Parse application/x-www-form-urlencoded && application/json
- * Use body-parser's `verify` callback to export a parsed raw body
- * that you need to use to verify the signature
- */
-
-const rawBodyBuffer = (req, res, buf, encoding) => {
-  if (buf && buf.length) {
-    req.rawBody = buf.toString(encoding || 'utf8')
-  }
-}
-
-const scaleBetween = (array, scaledMin, scaledMax) => {
-  const max = Math.max(...array)
-  const min = Math.min(...array)
-  if (min === max) {
-    return array
-  }
-  return array.map(
-    (num) => ((scaledMax - scaledMin) * (num - min)) / (max - min) + scaledMin
-  )
-}
-
-const groupBy = function (xs, key) {
-  return xs.reduce(function (rv, x) {
-    ;(rv[x[key]] = rv[x[key]] || []).push(x)
-    return rv
-  }, {})
-}
-
+/* Config */
 if (!process.env.SLACK_SIGNING_SECRET) {
   throw new Error(
     'SLACK_SIGNING_SECRET must be set in .env (see Basic Information page in Slack app config)'
@@ -54,6 +26,51 @@ const GIFS_PATH_FULL = join(__dirname, GIFS_PATH)
 
 const gifs = new Gifs(GIFS_PATH_FULL)
 
+/* Helpers */
+const getBestMatchingGifs = async function (searchTerm, threshold = 0.25) {
+  log.debug('Searching for', searchTerm)
+  const matches = await gifs.search(searchTerm)
+
+  const goodMatches = matches.filter((match) => match.score <= threshold)
+
+  if (!goodMatches.length) {
+    return goodMatches
+  }
+
+  log.info(`Good matches for ${searchTerm}: ${goodMatches.length}`)
+
+  // Grab the top results
+  const bestMatches = matches.splice(0, 3)
+
+  // Keep adding extra matches if the score is the same
+  let index = bestMatches.length
+  while (
+    index <= goodMatches.length &&
+    bestMatches[bestMatches.length - 1].score == goodMatches[index].score
+  ) {
+    bestMatches.push(goodMatches[index])
+    index++
+  }
+
+  log.info(`Best matches for ${searchTerm}: ${bestMatches.length}`)
+  log.debug('Matches', bestMatches)
+
+  return bestMatches
+}
+
+const selectedWeightedRandomGif = (gifs) => {
+  const weights = gifs.map((match) => match.score * 100)
+  const normalisedWeights = scaleBetween(weights, 100, 0)
+  log.debug('Weights', 'raw', weights, 'normalized', normalisedWeights)
+
+  const chosenIndex = weightedRandom(normalisedWeights)
+
+  log.debug('Chose gif index', chosenIndex)
+
+  return gifs[chosenIndex].item
+}
+
+/* Setup Express */
 app.engine('handlebars', exphbs())
 app.set('view engine', 'handlebars')
 
@@ -79,15 +96,12 @@ app.post('/command', async (req, res) => {
     return res.status(404).send()
   }
 
-  // extract the slash command text, and trigger ID from payload
+  // Extract the slash command text
   const { text } = req.body
 
-  log.debug('Searching for', text)
-  const matches = await gifs.search(text)
-
-  const goodMatches = matches.filter((match) => match.score <= 0.25)
-
-  if (!goodMatches.length) {
+  // Find some gifs
+  const bestMatches = await getBestMatchingGifs(text)
+  if (!bestMatches.length) {
     log.info(`No matches found for "${text}"`)
     return res.send({
       response_type: 'ephemeral',
@@ -95,29 +109,10 @@ app.post('/command', async (req, res) => {
     })
   }
 
-  log.info(`Good matches for ${text}: ${goodMatches.length}`)
-
-  const bestMatches = matches.splice(0, 3)
-
-  // Keep adding matches if the score is the same
-  let index = bestMatches.length
-  while (
-    index <= goodMatches.length &&
-    bestMatches[bestMatches.length - 1].score == goodMatches[index].score
-  ) {
-    bestMatches.push(goodMatches[index])
-    index++
-  }
-  log.info(`Best matches for ${text}: ${bestMatches.length}`)
-  log.debug('Matches', bestMatches)
-
-  const weights = bestMatches.map((match) => match.score * 100)
-  const normalisedWeights = scaleBetween(weights, 100, 0)
-  log.debug('Weights', 'raw', weights, 'normalized', normalisedWeights)
-
-  const chosenIndex = weightedRandom(normalisedWeights)
-  const chosenGif = bestMatches[chosenIndex].item
-  log.debug('Chose gif', chosenIndex, chosenGif)
+  // Choose the one to send
+  const chosenGif = selectedWeightedRandomGif(bestMatches)
+  log.info(`Chose gif ${chosenGif.path} for "${text}"`)
+  log.debug('Gif details', chosenGif)
 
   const hostname = req.protocol + '://' + req.get('host')
 
