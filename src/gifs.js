@@ -160,4 +160,10 @@ module.exports = class Gifs {
 
     return fuse.search(pattern)
   }
+
+  async findByPath(path) {
+    const { gifs } = await this.getGifsAndSearcher()
+
+    return gifs.find((gif) => gif.path === path)
+  }
 }
