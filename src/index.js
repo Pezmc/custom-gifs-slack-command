@@ -46,7 +46,7 @@ const getBestMatchingGifs = async function (searchTerm, threshold = 0.25) {
   // Keep adding extra matches if the score is the same
   let index = bestMatches.length
   while (
-    index <= goodMatches.length &&
+    index < goodMatches.length &&
     bestMatches[bestMatches.length - 1].score == goodMatches[index].score
   ) {
     bestMatches.push(goodMatches[index])
@@ -77,8 +77,6 @@ app.set('view engine', 'handlebars')
 
 app.use(bodyParser.urlencoded({ verify: rawBodyBuffer, extended: true }))
 app.use(bodyParser.json({ verify: rawBodyBuffer }))
-
-app.use('/gifs', express.static(GIFS_PATH_FULL))
 
 app.get('/', async (req, res) => {
   const { gifs: availableGifs } = await gifs.getGifsAndSearcher()
@@ -118,6 +116,7 @@ app.post('/command', async (req, res) => {
   const hostname = req.protocol + '://' + req.get('host')
 
   return res.send({
+    response_type: 'ephemeral',
     blocks: [
       {
         type: 'section',
@@ -151,7 +150,7 @@ app.post('/command', async (req, res) => {
               type: 'plain_text',
               text: 'Try Again',
             },
-            value: text,
+            value: JSON.stringify({ text, lastGifs: [chosenGif.path] }),
             action_id: 'get_new_gif',
           },
         ],
@@ -160,42 +159,150 @@ app.post('/command', async (req, res) => {
   })
 })
 
+const handleSendGif = async function (
+  searchText,
+  response_url,
+  username,
+  hostname
+) {
+  const chosenGif = await gifs.findByPath(searchText)
+  if (!chosenGif) {
+    log.warn(`Couldn't find a gif with a path matching ${searchText}`)
+    return await axios.post(response_url, {
+      text: `Something went wrong, couldn't find a gif matching "${searchText}", please try again`,
+    })
+  }
+
+  await axios.post(response_url, {
+    response_type: 'ephemeral',
+    text: '',
+    replace_original: true,
+    delete_original: true,
+  })
+
+  await axios.post(response_url, {
+    response_type: 'in_channel',
+    replace_original: false,
+    username,
+    //icon_url: to specify a URL to an image to use as the profile photo alongside the message.
+    //icon_emoji:
+    blocks: [
+      {
+        type: 'image',
+        image_url: hostname + join('/gifs', encodeURI(chosenGif.path)),
+        alt_text: chosenGif.name,
+      },
+    ],
+  })
+}
+
+const handleGetNewGif = async function (
+  value,
+  response_url,
+  username,
+  hostname
+) {
+  const { text, lastGifs } = JSON.parse(value)
+
+  // Todo - refactor to shared function
+
+  // Find some gifs
+  const bestMatches = await getBestMatchingGifs(text)
+  const remainingMatches = bestMatches.filter(
+    (gif) => !lastGifs.includes(gif.item.path)
+  )
+  if (!remainingMatches.length) {
+    log.info(`No matches found for "${text}"`)
+    return await axios.post(response_url, {
+      replace_original: true,
+      response_type: 'ephemeral',
+      text: 'Sorry, no other matches were found, try another search!',
+    })
+  }
+
+  // Choose the one to send
+  const chosenGif = selectedWeightedRandomGif(remainingMatches)
+  log.info(`Chose gif ${chosenGif.path} for "${text}"`)
+  log.debug('Gif details', chosenGif)
+
+  await axios.post(response_url, {
+    replace_original: true,
+    response_type: 'ephemeral',
+    blocks: [
+      {
+        type: 'section',
+        text: {
+          type: 'plain_text',
+          text: `Researched for "${text}"`,
+          emoji: true,
+        },
+      },
+      {
+        type: 'image',
+        image_url: hostname + join('/gifs', encodeURI(chosenGif.path)),
+        alt_text: chosenGif.name,
+      },
+      {
+        type: 'actions',
+        elements: [
+          {
+            type: 'button',
+            text: {
+              type: 'plain_text',
+              text: 'Send',
+            },
+            value: chosenGif.path,
+            action_id: 'send_gif',
+            style: 'primary',
+          },
+          {
+            type: 'button',
+            text: {
+              type: 'plain_text',
+              text: 'Another One',
+            },
+            value: JSON.stringify({
+              text,
+              lastGifs: [...lastGifs, chosenGif.path],
+            }),
+            action_id: 'get_new_gif',
+          },
+        ],
+      },
+    ],
+  })
+}
+
 const handleResponseAction = async function (
   hostname,
-  user,
-  response_url,
-  { action_id, value }
+  { user, response_url },
+  action
 ) {
+  const { action_id, value } = action
+  const { username } = user
+
   log.debug('Handling action', user, response_url, action_id, value)
 
   try {
-    let result, chosenGif
     switch (action_id) {
       case 'send_gif':
-        chosenGif = await gifs.findByPath(value)
-        if (!chosenGif) {
-          log.warn(`Couldn't find a gif with a path matching ${value}`)
-          return await axios.post(response_url, {
-            text: `Something went wrong, couldn't find a gif matching "${value}", please try again`,
-          })
-        }
-
-        result = await axios.post(response_url, {
-          response_type: 'in_channel',
-          blocks: [
-            {
-              type: 'image',
-              image_url: hostname + join('/gifs', encodeURI(chosenGif.path)),
-              alt_text: chosenGif.name,
-            },
-          ],
-        })
-        console.log(result)
+        await handleSendGif(value, response_url, username, hostname)
 
         break
 
       case 'get_new_gif':
-        console.log(arguments)
+        await handleGetNewGif(value, response_url, username, hostname)
+
+        break
+
+      case 'cancel':
+        axios.post(response_url, {
+          delete_original: true,
+          replace_original: true,
+          response_type: 'ephemeral',
+          text: '',
+        })
+
         break
 
       default:
@@ -203,6 +310,10 @@ const handleResponseAction = async function (
     }
   } catch (error) {
     log.error(`Failed to handle ${action_id} request ${error}`)
+    axios.post(response_url, {
+      delete_original: true,
+      text: 'Something went wrong, sorry!',
+    })
   }
 }
 
@@ -217,15 +328,19 @@ app.post('/request', async (req, res) => {
     return res.status(404).send()
   }
 
+  console.log(req.body.payload)
+
   // Parse the payload
-  const { user, response_url, actions } = JSON.parse(req.body.payload)
+  const { actions, ...payload } = JSON.parse(req.body.payload)
   const hostname = req.protocol + '://' + req.get('host')
 
-  actions.forEach(handleResponseAction.bind(this, hostname, user, response_url))
+  actions.forEach(handleResponseAction.bind(this, hostname, { ...payload }))
 
   // Ack the request
   res.send('')
 })
+
+app.use('/gifs', express.static(GIFS_PATH_FULL))
 
 const server = app.listen(process.env.PORT || 5000, () => {
   log.log(
