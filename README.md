@@ -1,63 +1,108 @@
-# Slash Command and ~~Dialogs~~ Modals blueprint
+# Your Own Custom Gif Search for Slack
 
-> :sparkles: _Updated October 2019: As we have introduced some new features, this tutorial and the code samples have been updated! All the changes from the previous version of this example, read the [DIFF.md](DIFF.md)_
+> Allows you to have your own collection of gifs that you can search and post to slack with a simple command.
 
-## Creating a helpdesk ticket using a Slash Command and a ~~Dialog~~ Modal
+## Usage
 
-Use a slash command and a dialog to create a helpdesk ticket in a 3rd-party system. Once it has been created, send a message to the user with information about their ticket.
+1. [Setup the Repo](#setup-the-repo)
+1. [Deploy somewhere](#deploy-somewhere)
+1. [Configure Slack](#configure-slack)
+1. [Try it out](#try-it-out)
+1. [Add some extra gifs](#add-some-extra-gifs)
 
-![helpdesk-dialog](https://user-images.githubusercontent.com/700173/30929774-5fe9f0e2-a374-11e7-958e-0d8c362f89a3.gif)
+### Setup Repo
 
-## Setup
+Either fork or use this repo as a template.
 
-### Create a Slack app
+### Deploy Somewhere
+
+Deploy the code from this repo to a server, it comes pre-configured for Heroku
+
+```bash
+heroku create
+git push heroku main
+```
+
+### Configure Slack
 
 1. Create an app at [https://api.slack.com/apps](https://api.slack.com/apps)
-2. Add a Slash command (See _Add a Slash Command_ section below)
-3. Enable Interactive components (See _Enable Interactive Components_ below)
-4. Navigate to the **OAuth & Permissions** page and select the following bot token scopes:
+1. Add a Slash command
+1. Enable Interactive components
+1. Navigate to the **OAuth & Permissions** page and select the following bot token scopes:
    - `commands`
    - `chat:write`
-   - `users:read`
-   - `users:read.email`
-   - `im:write`
-5. Click 'Save Changes' and install the app (You should get an OAuth access token after the installation)
+   - `chat:write.customize`
+1. Click 'Save Changes' and install the app (You should get an OAuth access token after the installation)
 
 #### Add a Slash Command
 
 1. Go back to the app settings and click on Slash Commands.
 1. Click the 'Create New Command' button and fill in the following:
-   - Command: `/helpdesk`
-   - Request URL: Your server or Glitch URL + `/command`
-   - Short description: `Create a helpdesk ticket`
-   - Usage hint: `[the problem you're having]`
+   - Command: `/gifs`
+   - Request URL: Your server URL + `/command`
+   - Short description: `Search for a gif`
+   - Usage hint: `[search terms]`
 
-If you did "Remix" on Glitch, it auto-generate a new URL with two random words, so your Request URL should be like: `https://fancy-feast.glitch.me/command`.
+If you're using Heroku, your URL will be something like: `http://[your-instance-name].herokuapp.com/command`.
 
 #### Enable Interactive Components
 
 1. Go back to the app settings and click on Interactive Components.
-1. Set the Request URL to your server or Glitch URL + `/interactive`.
+1. Set the Request URL to your server URL + `/request`.
 1. Save the change.
 
-### Set Your Credentials
+#### Set Your Credentials
 
 1. Set the following environment variables to `.env` (see `.env.sample`):
-   - `SLACK_ACCESS_TOKEN`: Your bot token, `xoxb-` (available on the **OAuth & Permissions** once you install the app)
    - `SLACK_SIGNING_SECRET`: Your app's Signing Secret (available on the **Basic Information** page)
-2. If you're running the app locally, run the app (`npm start`). Or if you're using Glitch, it automatically starts the app.
+   - For Heroku you'll need to use `heroku config:set SLACK_SIGNING_SECRET=<your-secret>`
+1. If you're running the app locally, run the app (`npm start`)
 
-#### Run the app
+### Try It Out
 
-1. Get the code
-   - Clone this repo and run `npm install`
-2. Set the following environment variables to `.env` (see `.env.sample`):
-   - `SLACK_ACCESS_TOKEN`: Your bot token, `xoxb-` (available on the **OAuth & Permissions** once you install the app)
-   - `SLACK_SIGNING_SECRET`: Your app's Signing Secret (available on the **Basic Information** page)
-3. If you're running the app locally, run the app (`npm start`).
+Head to your Slack workspace and type the Slash command you setup above, for example:
 
-If you want to run it locally, I recommend creating a localhost tunnel with [ngrok](https://ngrok.com)!
+```
+/gif testing
+```
 
-### App Flow Diagram
+You should see an interactive block where you can send, search again, or cancel.
 
-![diagram](https://api.slack.com/dev-cdn/v1568133600/img/api/articles/blueprints/slash_command_and_dialogs.png)
+![](./docs/how-it-looks.png)
+
+If you head directly to your hosted instance, you can see a list of all the loaded gifs.
+
+For Heroku that would be `http://[your-instance-name].herokuapp.com/`
+
+### Add some extra gifs
+
+> Important: Gifs over 2MB won't auto-expand in Slack, and gifs that are too large (~10MB+ won't load at all).
+
+The gifs are organised into folders and subfolders under `gifs/`, only the deepest two folders are considered when searching.
+
+This repo comes with some examples, and shows how you can nest folders to make searching easier.
+
+When searching for a gif, the name is matched first, followed by the subcategory, then any additional subcategory tags from `gifs/categories.js`, then the category and finally the category tags.
+
+For example:
+
+```
+gifs/happy/clap/my-image.gif - will match my image, followed by clap (and tags) then happy (and tags)
+gifs/happy/laughing.gif - will match laughing, followed by happy (and tags)
+```
+
+You can either add your gifs under the pre-existing folders, or, since only the last two folders are considered, namespace them entirely:
+
+```
+gifs/custom/happy/clap/my-image.gif - matches image, clap (and tags), then happy (and tags)
+gifs/custom/happy/laughing.gif - matches laughing then happy (and tags), and custom (and tags if any set)
+gifs/custom/my-gif.gif - matches my gif, then custom (and tags if set)
+```
+
+#### Extra Tagging
+
+The tagging metadata file is found in `gifs/categories.js`, and maps category and subcategory names to extra words or phrases that will match.
+
+This means that the "yes" folder for example, also matches for "affirmative, ok, okay" etc...
+
+Subcategories and categories are looked up based on the deepest and second deepest folder, and use the same list. Meaning you can namespace your gifs if you'd like.
