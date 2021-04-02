@@ -6,7 +6,7 @@ const log = require('debug-level').log('custom-gifs-slack:gifs')
 const Fuse = require('fuse.js')
 const glob = require('glob-promise')
 
-const categoryTags = require('../gifs/categories.js')
+const categoryTags = require('./gifs/categories.js')
 
 const fuseOptions = {
   // isCaseSensitive: false,
@@ -77,6 +77,7 @@ const checkForBigGifs = (root, gifsInfo) => {
   })
 }
 
+const sentCategoryWarnings = {}
 const parseGif = (root, gifFullPath) => {
   const gifPath = gifFullPath.replace(root + '/', '')
   const [folder, subfolder, ...name] = gifPath.split('/') // only consider the last two folders
@@ -93,10 +94,19 @@ const parseGif = (root, gifFullPath) => {
   const categoryText = category.replaceAll('-', ' ')
   const subCategoryText = (subcategory || '').replaceAll('-', ' ')
 
-  if (!categoryTags[category] || !categoryTags[category].length) {
+  if (!categoryTags[category]?.length && !sentCategoryWarnings[category]) {
+    log.warn(`Category ${category} doesn't have any tags in categories.json`)
+    sentCategoryWarnings[category] = true
+  }
+  if (
+    subcategory &&
+    !categoryTags[subcategory]?.length &&
+    !sentCategoryWarnings[subcategory]
+  ) {
     log.warn(
-      `(Sub)Category ${category} doesn't have any tags in categories.json`
+      `Subcategory ${subcategory} doesn't have any tags in categories.json`
     )
+    sentCategoryWarnings[subcategory] = true
   }
 
   return {
@@ -162,5 +172,36 @@ module.exports = class Gifs {
     const { gifs } = await this.getGifsAndSearcher()
 
     return gifs.find((gif) => gif.path === path)
+  }
+
+  async bestMatches(searchTerm, threshold = 0.25) {
+    log.debug('Searching for', searchTerm)
+    const matches = await this.search(searchTerm)
+
+    const goodMatches = matches.filter((match) => match.score <= threshold)
+
+    if (!goodMatches.length) {
+      return goodMatches
+    }
+
+    log.info(`Good matches for ${searchTerm}: ${goodMatches.length}`)
+
+    // Grab the top results
+    const bestMatches = matches.splice(0, 3)
+
+    // Keep adding extra matches if the score is the same
+    let index = bestMatches.length
+    while (
+      index < goodMatches.length &&
+      bestMatches[bestMatches.length - 1].score == goodMatches[index].score
+    ) {
+      bestMatches.push(goodMatches[index])
+      index++
+    }
+
+    log.info(`Best matches for ${searchTerm}: ${bestMatches.length}`)
+    log.debug('Matches', bestMatches)
+
+    return bestMatches
   }
 }

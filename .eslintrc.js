@@ -15,6 +15,14 @@ module.exports = {
     sourceType: 'module',
   },
   rules: {
+    // eslint:recommended
+    'no-unused-vars': [
+      'error',
+      {
+        argsIgnorePattern: '^_',
+      },
+    ],
+
     // eslint - styles
     'linebreak-style': ['error', 'unix'],
 

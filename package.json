@@ -1,19 +1,19 @@
 {
   "name": "custom-gifs-slack-command",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": true,
-  "description": "Sample Slack app that responds to an Slack slash command with an interactive message",
+  "description": "Search for and post custom gifs in Slack",
   "license": "UNLICENSED",
   "author": "Pez Cuckow",
-  "main": "src/index.js",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "format:write": "yarn run format:write:js && prettier --write .",
     "format:write:js": "eslint --fix .",
     "lint": "yarn run lint:js && prettier --check .",
     "lint:js": "eslint .",
-    "start": "DEBUG=slash-command-template node src/index.js",
-    "start:dev": "nodemon src/index.js",
+    "start": "node app.js",
+    "start:dev": "nodemon app.js",
     "prepare": "husky install"
   },
   "lint-staged": {
@@ -31,6 +31,7 @@
     "fuse.js": "^6.4.6",
     "glob": "^7.1.6",
     "glob-promise": "^4.1.0",
+    "morgan": "^1.10.0",
     "pino": "^6.11.2",
     "tsscmp": "^1.0.6",
     "weighted-random": "^0.1.0"
