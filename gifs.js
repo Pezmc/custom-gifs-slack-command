@@ -113,7 +113,7 @@ const parseGif = (root, gifFullPath) => {
     name: name
       .join(' ')
       .replace('.gif', '')
-      .replaceAll(/[^A-z]/g, ' '),
+      .replaceAll(/[^A-z']/g, ' '),
     path: gifPath,
     category: categoryText,
     categoryTags: categoryTags[category],

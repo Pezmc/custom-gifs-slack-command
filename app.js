@@ -24,7 +24,13 @@ app.use(bodyParser.json({ verify: rawBodyBuffer }))
 app.get('/', async (req, res) => {
   const { gifs: availableGifs } = await config.gifs.getGifsAndSearcher()
 
-  res.render('home', { categories: groupBy(availableGifs, 'category') })
+  const byCategory = groupBy(availableGifs, 'category')
+
+  Object.keys(byCategory).forEach((key) => {
+    byCategory[key] = groupBy(byCategory[key], 'subcategory')
+  })
+
+  res.render('home', { categories: byCategory })
 })
 
 // Main routes

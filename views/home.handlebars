@@ -9,11 +9,11 @@
   ul li {
     display: block;
     position: relative;
-    max-width: 30%;
+    max-width: 25%;
     margin: 10px;
     flex-shrink: 1;
     flex-basis: 0;
-    flex: 1 0 21%; /* explanation below */
+    flex: 1 0 21%;
   }
 
   img {
@@ -21,24 +21,21 @@
   }
 </style>
 
-<h1>Custom Gifs for Slack</h1>
-
-<h2>Usage</h2>
-
-<h3>/gifc [search terms]</h3>
-
-<h2>Available Gifs</h2>
+<h2 class="title is-2">Available Gifs</h2>
 
 {{#each categories}}
-  {{log  this}}
-  <h3>{{@key}}</h3>
+  {{log this}}
+  <h3 class="title is-3">{{titleize @key}}</h3>
 
-  <ul>
-    {{#each this}}
+  {{#each this}}
+    <h3 class="subtitle is-3">{{titleize @key}}</h3>
+    <ul>
+      {{#each this}}
       <li>
-        <h4>{{name}}</h4>
+        <h4>{{titleize name}}</h4>
         <img src="./gifs/{{path}}" />
       </li>
-    {{/each}}
-  </ul>
+      {{/each}}
+    </ul>
+  {{/each}}
 {{/each}}

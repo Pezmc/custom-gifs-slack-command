@@ -1,10 +1,45 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Custom Slack Gifs</title>
-</head>
-<body>
-  {{{body}}}
-</body>
+    <link rel="stylesheet" href="/bulma.min.css">
+    <style>
+      .navbar-brand h1, .navbar-brand h2 {
+        color: #fff;
+      }
+    </style>
+  </head>
+  <body class="has-navbar-fixed-top">
+    <nav class="navbar is-fixed-top is-link" role="navigation" aria-label="main navigation">
+      <div class="container">
+        <div class="navbar-brand">
+          <a class="navbar-item" href="/">
+            <h1 class="title is-1">Custom Slack Gifs</h1>
+          </a>
+
+          <a class="navbar-item" href="/">
+
+            <h2 class="subtitle is-2">Usage: /gifc [search terms]</h2>
+          </a>
+        </div>
+
+        <div class="navbar-end">
+          <div class="navbar-item">
+            <div class="buttons">
+              <a class="button is-light" href="https://github.com/Pezmc/custom-gifs-slack-command" target="_blank">
+                GitHub
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+    <section class="section">
+      <div class="container">
+        {{{body}}}
+      </div>
+    </section>
+  </body>
 </html>
