@@ -1,6 +1,6 @@
 {
   "name": "custom-gifs-slack-command",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "private": true,
   "description": "Search for and post custom gifs in Slack",
   "license": "UNLICENSED",
