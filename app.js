@@ -6,6 +6,7 @@ const bodyParser = require('body-parser')
 const log = require('debug-level').log('custom-gifs-slack')
 const express = require('express')
 const exphbs = require('express-handlebars')
+const handlebarsHelpers = require('handlebars-helpers')
 const logger = require('morgan')
 
 const config = require('./config')
@@ -13,8 +14,11 @@ const { rawBodyBuffer, groupBy } = require('./utils')
 
 const app = express()
 
-// Setup Express
-app.engine('handlebars', exphbs())
+const hbs = exphbs.create({
+  helpers: handlebarsHelpers(['string']),
+})
+
+app.engine('handlebars', hbs.engine)
 app.set('view engine', 'handlebars')
 
 app.use(logger('dev'))
