@@ -5,7 +5,10 @@ const gifBlock = (chosenGif, hostname) => {
     type: 'image',
     image_url: hostname + join('/gifs', encodeURI(chosenGif.path)),
     alt_text: `${chosenGif.category} / ${chosenGif.subcategory} / ${chosenGif.name}`,
-    title: chosenGif.name,
+    title: {
+      type: 'plain_text',
+      text: chosenGif.name,
+    },
   }
 }
 
@@ -27,7 +30,7 @@ module.exports = {
           type: 'section',
           text: {
             type: 'plain_text',
-            text: `Searched for "${searchTerm}"`,
+            text: `Searched for "${searchTerm}":`,
             emoji: true,
           },
         },
