@@ -1,0 +1,21 @@
+{
+  "agree": ["yes", "on board", "ok", "concur", "concord"],
+  "clap": ["impressed", "great", "clapping", "applause"],
+  "disappointment": ["disappointed", "defeated"],
+  "disaster": ["failure"],
+  "excitement": ["excited", "enthused"],
+  "facepalm": ["face palm"],
+  "finished": ["done", "complete"],
+  "high-five": ["high five"],
+  "laughing": ["lol", "joke"],
+  "lonely": ["alone", "isolated"],
+  "maybe": ["perhaps", "potentially", ""],
+  "mic-drop": ["mic drop", "peace out"],
+  "nope": ["no", "thumbs down"],
+  "sad": ["sadness", "upset"],
+  "sarcasm": ["sarcastic"],
+  "surprised": ["shock"],
+  "thinking": ["thought"],
+  "thumbs-up": ["plus one", "+1", "agree"],
+  "working": ["busy", "programming"]
+}

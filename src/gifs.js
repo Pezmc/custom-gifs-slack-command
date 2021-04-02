@@ -44,26 +44,8 @@ const fuseOptions = {
   ],
 }
 
-const categoryTags = {
-  'high-five': ['high five'],
-  'mic-drop': ['mic drop', 'peace out'],
-  'thumbs-up': ['plus one', 'yes', 'agree'],
-  agree: ['yes', 'on board', 'ok'],
-  clap: ['impressed', 'great', 'clapping', 'applause'],
-  disappointment: ['disappointed', 'defeated'],
-  disaster: ['failure'],
-  excitement: ['excited', 'enthused'],
-  facepalm: ['face palm'],
-  finished: ['done', 'complete'],
-  laughing: ['lol', 'joke'],
-  lonely: ['alone', 'isolated'],
-  maybe: ['perhaps', 'potentially', ''],
-  nope: ['no', 'thumbs down'],
-  sad: ['sadness', 'upset'],
-  sarcasm: ['sarcastic'],
-  surprised: ['shock'],
-  thinking: ['thought'],
-  working: ['busy', 'programming'],
+const loadCategoryTags = async (root) => {
+  return await fs.readFile(join(root, 'categories.json'), { encoding: 'utf8' })
 }
 
 const checkForBigGifs = (root, gifsInfo) => {
@@ -98,7 +80,7 @@ const checkForBigGifs = (root, gifsInfo) => {
   })
 }
 
-const loadsGifs = async (path) => {
+const loadsGifs = async (path, categoryTags) => {
   log.info('Looking for gifs in ', path)
   const gifs = await glob('/**/*.gif', { root: path })
 
@@ -112,6 +94,12 @@ const loadsGifs = async (path) => {
     const synonymResults = findSymonyms(categoryText)
     const nouns = synonymResults?.n
     const verbs = synonymResults?.v
+
+    if (!categoryTags[category] || !categoryTags[category].length) {
+      log.warn(`Category ${category} doesn't have any tags in categories.json`)
+    }
+
+    console.log(category, nouns, verbs)
 
     return {
       category: categoryText,
@@ -154,13 +142,26 @@ module.exports = class Gifs {
       }
     }
 
-    this.gifs = await loadsGifs(this.path)
+    this.gifs = await loadsGifs(this.path, await this.getCategoryTags())
     this.fuse = new Fuse(this.gifs, fuseOptions)
 
     return {
       gifs: this.gifs,
       fuse: this.fuse,
     }
+  }
+
+  async getCategoryTags() {
+    if (this.categoryTags) {
+      return this.categoryTags
+    }
+
+    const tagsAsString = await loadCategoryTags(this.path)
+    this.categoryTags = JSON.parse(tagsAsString)
+
+    console.log(this.categoryTags)
+
+    return this.categoryTags
   }
 
   async search(pattern) {
