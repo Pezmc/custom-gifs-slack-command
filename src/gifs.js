@@ -5,7 +5,6 @@ const { inspect } = require('util')
 const log = require('debug-level').log('custom-gifs-slack:gifs')
 const Fuse = require('fuse.js')
 const glob = require('glob-promise')
-const findSymonyms = require('synonyms')
 
 const fuseOptions = {
   // isCaseSensitive: false,
@@ -23,23 +22,23 @@ const fuseOptions = {
   keys: [
     {
       name: 'category',
+      weight: 2,
+    },
+    {
+      name: 'categoryTags',
+      weight: 1.5,
+    },
+    {
+      name: 'subcategory',
       weight: 2.5,
     },
     {
-      name: 'tags',
+      name: 'subcategoryTags',
       weight: 2,
     },
     {
       name: 'name',
       weight: 3,
-    },
-    {
-      name: 'synonyms.verb',
-      weight: 1.5,
-    },
-    {
-      name: 'synonyms.noun',
-      weight: 1,
     },
   ],
 }
@@ -86,33 +85,34 @@ const loadsGifs = async (path, categoryTags) => {
 
   const gifsInfo = gifs.map((fullPath) => {
     const gifPath = fullPath.replace(path + '/', '')
-    const [folder, ...name] = gifPath.split('/')
+    const [folder, subfolder, ...name] = gifPath.split('/')
 
     const category = folder
-    const categoryText = category.replaceAll('-', ' ')
+    let subcategory = subfolder
 
-    const synonymResults = findSymonyms(categoryText)
-    const nouns = synonymResults?.n
-    const verbs = synonymResults?.v
+    // Subfolders are optional
+    if (!name.length) {
+      name.push(subfolder)
+      subcategory = undefined
+    }
+
+    const categoryText = category.replaceAll('-', ' ')
+    const subCategoryText = (subcategory || '').replaceAll('-', ' ')
 
     if (!categoryTags[category] || !categoryTags[category].length) {
       log.warn(`Category ${category} doesn't have any tags in categories.json`)
     }
 
-    console.log(category, nouns, verbs)
-
     return {
-      category: categoryText,
       name: name
         .join(' ')
         .replace('.gif', '')
         .replaceAll(/[^A-z]/g, ' '),
       path: gifPath,
-      tags: categoryTags[category],
-      synonyms: {
-        nouns,
-        verbs,
-      },
+      category: categoryText,
+      categoryTags: categoryTags[category],
+      subcategory: subCategoryText,
+      subcategoryTags: categoryTags[subcategory] || [],
     }
   })
 

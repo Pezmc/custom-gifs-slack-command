@@ -2575,11 +2575,6 @@ supports-color@^7.1.0:
   dependencies:
     has-flag "^4.0.0"
 
-synonyms@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/synonyms/-/synonyms-1.0.1.tgz#e12ce7805918eb99cc3088bcb9a8ecf3e1046966"
-  integrity sha1-4SzngFkY65nMMIi8uajs8+EEaWY=
-
 table@^6.0.4:
   version "6.0.7"
   resolved "https://registry.yarnpkg.com/table/-/table-6.0.7.tgz#e45897ffbcc1bcf9e8a87bf420f2c9e5a7a52a34"

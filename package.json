@@ -32,7 +32,6 @@
     "glob": "^7.1.6",
     "glob-promise": "^4.1.0",
     "pino": "^6.11.2",
-    "synonyms": "^1.0.1",
     "tsscmp": "^1.0.6",
     "weighted-random": "^0.1.0"
   },
