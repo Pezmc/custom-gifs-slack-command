@@ -10,7 +10,7 @@
 1. [Try it out](#try-it-out)
 1. [Add some extra gifs](#add-some-extra-gifs)
 
-### Setup Repo
+### Setup the Repo
 
 Either fork or use this repo as a template.
 
