@@ -82,8 +82,16 @@ const checkForBigGifs = (root, gifsInfo) => {
     bigGifs.forEach((file) => {
       const sizeMB = file.stats.size / (1024 * 1024)
       const roundedSizeMB = Math.round(sizeMB * 100) / 100
+
+      if (sizeMB > 10) {
+        return log.error(
+          `${file.gifInfo.path} is over 10MB at ${roundedSizeMB}MB.`,
+          `It's unlikely to display at all, it's suggested that you compress it.`
+        )
+      }
+
       log.warn(
-        `Warning: ${file.gifInfo.path} is over 2MB at ${roundedSizeMB}MB.`,
+        `${file.gifInfo.path} is over 2MB at ${roundedSizeMB}MB.`,
         `It won't auto-expand on slack, it's suggested that you compress it.`
       )
     })
