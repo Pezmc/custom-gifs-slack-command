@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "Search for and post custom gifs in Slack",
-  "license": "UNLICENSED",
+  "license": "GPL",
   "author": "Pez Cuckow",
   "main": "index.js",
   "scripts": {
