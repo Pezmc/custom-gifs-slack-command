@@ -2,6 +2,10 @@
 
 > Allows you to have your own collection of gifs that you can search and post to slack with a simple command.
 
+![Typing the custom command to start a search](./trigger.png)
+
+![Seeing the results of the search](./searching.png)
+
 ## Usage
 
 1. [Setup the Repo](#setup-the-repo)
