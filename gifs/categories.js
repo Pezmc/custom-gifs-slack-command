@@ -9,11 +9,11 @@ module.exports = {
   happy: ['cheerful', 'glee', 'merry', 'joyful'],
   sad: ['sadness', 'upset'],
 
-  angry: [],
-  fearful: [],
+  angry: ['annoyed', 'cross', 'irritated'],
+  fearful: ['afraid', 'scared'],
 
   surprised: ['shock'],
-  anticipating: [],
+  anticipating: ['expectant'],
 
   other: [],
 
