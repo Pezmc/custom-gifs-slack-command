@@ -39,7 +39,12 @@ app.get('/', async (req, res) => {
 
 // Main routes
 app.use(require('./routes/slack'))
-app.use('/gifs', express.static(config.gifsPath))
+app.use(
+  '/gifs',
+  express.static(config.gifsPath, {
+    maxage: '365d',
+  })
+)
 app.use(express.static(join(__dirname, 'public')))
 
 // Error handler
