@@ -1,21 +1,43 @@
 {
-  "agree": ["yes", "on board", "ok", "concur", "concord"],
-  "clap": ["impressed", "great", "clapping", "applause"],
-  "disappointment": ["disappointed", "defeated"],
-  "disaster": ["failure"],
-  "excitement": ["excited", "enthused"],
+  "agree": [
+    "affirmative",
+    "concord",
+    "concur",
+    "ok",
+    "okay",
+    "on board",
+    "yea",
+    "yes"
+  ],
+  "clap": ["impressed", "great", "clapping", "applause", "handclap", "cheers"],
+  "disappointment": ["disappointed", "defeated", "let down", "failure"],
+  "disaster": ["failure", "calamity", "catastrophe"],
+  "excitement": [
+    "excited",
+    "enthused",
+    "excitation",
+    "inflammation",
+    "fervor",
+    "fervour"
+  ],
   "facepalm": ["face palm"],
-  "finished": ["done", "complete"],
+  "finished": ["done", "complete", "all done", "it's done"],
   "high-five": ["high five"],
-  "laughing": ["lol", "joke"],
+  "laughing": ["lol", "joke", "funny"],
   "lonely": ["alone", "isolated"],
-  "maybe": ["perhaps", "potentially", ""],
+  "maybe": ["perhaps", "potentially", "not sure"],
   "mic-drop": ["mic drop", "peace out"],
   "nope": ["no", "thumbs down"],
   "sad": ["sadness", "upset"],
-  "sarcasm": ["sarcastic"],
+  "sarcasm": ["sarcastic", "irony", "satire"],
   "surprised": ["shock"],
-  "thinking": ["thought"],
+  "thinking": [
+    "thought",
+    "thought",
+    "cerebration",
+    "intellection",
+    "mentation"
+  ],
   "thumbs-up": ["plus one", "+1", "agree"],
   "working": ["busy", "programming"]
 }
