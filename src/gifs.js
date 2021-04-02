@@ -6,6 +6,8 @@ const log = require('debug-level').log('custom-gifs-slack:gifs')
 const Fuse = require('fuse.js')
 const glob = require('glob-promise')
 
+const categoryTags = require('../gifs/categories.js')
+
 const fuseOptions = {
   // isCaseSensitive: false,
   includeScore: true,
@@ -43,10 +45,6 @@ const fuseOptions = {
   ],
 }
 
-const loadCategoryTags = async (root) => {
-  return await fs.readFile(join(root, 'categories.json'), { encoding: 'utf8' })
-}
-
 const checkForBigGifs = (root, gifsInfo) => {
   const tasks = gifsInfo.map((gifInfo) =>
     fs.stat(join(root, gifInfo.path)).then((stats) => {
@@ -79,42 +77,45 @@ const checkForBigGifs = (root, gifsInfo) => {
   })
 }
 
-const loadsGifs = async (path, categoryTags) => {
+const parseGif = (root, gifFullPath) => {
+  const gifPath = gifFullPath.replace(root + '/', '')
+  const [folder, subfolder, ...name] = gifPath.split('/') // only consider the last two folders
+
+  const category = folder
+  let subcategory = subfolder
+
+  // Subfolders are optional
+  if (!name.length) {
+    name.push(subfolder)
+    subcategory = undefined
+  }
+
+  const categoryText = category.replaceAll('-', ' ')
+  const subCategoryText = (subcategory || '').replaceAll('-', ' ')
+
+  if (!categoryTags[category] || !categoryTags[category].length) {
+    log.warn(
+      `(Sub)Category ${category} doesn't have any tags in categories.json`
+    )
+  }
+
+  return {
+    name: name
+      .join(' ')
+      .replace('.gif', '')
+      .replaceAll(/[^A-z]/g, ' '),
+    path: gifPath,
+    category: categoryText,
+    categoryTags: categoryTags[category],
+    subcategory: subCategoryText,
+    subcategoryTags: categoryTags[subcategory] || [],
+  }
+}
+
+const loadsGifs = async (path) => {
   log.info('Looking for gifs in ', path)
   const gifs = await glob('/**/*.gif', { root: path })
-
-  const gifsInfo = gifs.map((fullPath) => {
-    const gifPath = fullPath.replace(path + '/', '')
-    const [folder, subfolder, ...name] = gifPath.split('/')
-
-    const category = folder
-    let subcategory = subfolder
-
-    // Subfolders are optional
-    if (!name.length) {
-      name.push(subfolder)
-      subcategory = undefined
-    }
-
-    const categoryText = category.replaceAll('-', ' ')
-    const subCategoryText = (subcategory || '').replaceAll('-', ' ')
-
-    if (!categoryTags[category] || !categoryTags[category].length) {
-      log.warn(`Category ${category} doesn't have any tags in categories.json`)
-    }
-
-    return {
-      name: name
-        .join(' ')
-        .replace('.gif', '')
-        .replaceAll(/[^A-z]/g, ' '),
-      path: gifPath,
-      category: categoryText,
-      categoryTags: categoryTags[category],
-      subcategory: subCategoryText,
-      subcategoryTags: categoryTags[subcategory] || [],
-    }
-  })
+  const gifsInfo = gifs.map(parseGif.bind(this, path))
 
   checkForBigGifs(path, gifsInfo)
 
@@ -142,26 +143,13 @@ module.exports = class Gifs {
       }
     }
 
-    this.gifs = await loadsGifs(this.path, await this.getCategoryTags())
+    this.gifs = await loadsGifs(this.path)
     this.fuse = new Fuse(this.gifs, fuseOptions)
 
     return {
       gifs: this.gifs,
       fuse: this.fuse,
     }
-  }
-
-  async getCategoryTags() {
-    if (this.categoryTags) {
-      return this.categoryTags
-    }
-
-    const tagsAsString = await loadCategoryTags(this.path)
-    this.categoryTags = JSON.parse(tagsAsString)
-
-    console.log(this.categoryTags)
-
-    return this.categoryTags
   }
 
   async search(pattern) {
