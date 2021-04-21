@@ -46,8 +46,8 @@
     "sort-package-json": "^1.49.0"
   },
   "engines": {
-    "node": ">=14.15.0",
-    "yarn": ">=1.22.10"
+    "node": "^15.14.0",
+    "yarn": "^1.22.10"
   },
   "authors": [
     "Pez Cuckow <email@pezcuckow.com>"
