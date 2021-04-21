@@ -5,7 +5,7 @@ const config = require('../config')
 const payloads = require('../utils/payloads')
 const selectedWeightedRandomGif = require('../utils/weightedSelect')
 
-const handleSendGif = async function (gifPath, response_url, user, hostname) {
+const handleSendGif = async function (gifPath, response_url, user) {
   const chosenGif = await config.gifs.findByPath(gifPath)
   if (!chosenGif) {
     log.warn(`Couldn't find a gif with a path matching ${gifPath}`)
@@ -14,13 +14,10 @@ const handleSendGif = async function (gifPath, response_url, user, hostname) {
 
   axios.post(response_url, payloads.deleteMessage())
 
-  await axios.post(
-    response_url,
-    payloads.postGif(user.username, chosenGif, hostname)
-  )
+  await axios.post(response_url, payloads.postGif(user.username, chosenGif))
 }
 
-const handleGetNewGif = async function (value, response_url, hostname) {
+const handleGetNewGif = async function (value, response_url) {
   const { searchTerm, lastGifs } = JSON.parse(value)
 
   // Find some gifs
@@ -42,13 +39,10 @@ const handleGetNewGif = async function (value, response_url, hostname) {
   log.info(`Chose gif ${chosenGif.path} for "${searchTerm}"`)
   log.debug('Gif details', chosenGif)
 
-  axios.post(
-    response_url,
-    payloads.confirmGif(searchTerm, chosenGif, hostname, lastGifs)
-  )
+  axios.post(response_url, payloads.confirmGif(searchTerm, chosenGif, lastGifs))
 }
 
-module.exports = async function (hostname, { user, response_url }, action) {
+module.exports = async function ({ user, response_url }, action) {
   const { action_id, value } = action
 
   log.debug('Handling action', user, response_url, action_id, value)
@@ -56,12 +50,12 @@ module.exports = async function (hostname, { user, response_url }, action) {
   try {
     switch (action_id) {
       case 'send_gif':
-        await handleSendGif(value, response_url, user, hostname)
+        await handleSendGif(value, response_url, user)
 
         break
 
       case 'get_new_gif':
-        await handleGetNewGif(value, response_url, hostname)
+        await handleGetNewGif(value, response_url)
 
         break
 
