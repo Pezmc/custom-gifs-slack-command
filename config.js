@@ -1,7 +1,5 @@
 require('dotenv').config()
 
-const { join } = require('path')
-
 const Gifs = require('./gifs')
 
 module.exports = (function () {
@@ -11,14 +9,14 @@ module.exports = (function () {
     )
   }
 
-  const gifsPath = process.env.GIFS_PATH || 'gifs'
-  const gifsPathFull = join(process.cwd(), gifsPath)
-
-  const gifs = new Gifs(gifsPathFull)
+  if (!process.env.GIFS_SERVER) {
+    throw new Error('GIFS_SERVER path must be set in .env (see readme)')
+  }
+  const gifs = new Gifs(process.env.GIFS_SERVER)
 
   return {
     gifs,
-    gifsPath: gifsPathFull,
+    gifsServer: process.env.GIFS_SERVER,
     port: process.env.PORT || 5000,
     slackSigningSecret: process.env.SLACK_SIGNING_SECRET,
   }

@@ -27,12 +27,11 @@
     "debug-level": "^2.0.2",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
-    "express-handlebars": "^5.3.0",
     "fuse.js": "^6.4.6",
     "glob": "^7.1.6",
     "glob-promise": "^4.1.0",
-    "handlebars-helpers": "^0.10.0",
     "morgan": "^1.10.0",
+    "node-cache": "^5.1.2",
     "tsscmp": "^1.0.6",
     "weighted-random": "^0.1.0"
   },
@@ -52,5 +51,8 @@
   },
   "authors": [
     "Pez Cuckow <email@pezcuckow.com>"
-  ]
+  ],
+  "volta": {
+    "node": "15.14.0"
+  }
 }

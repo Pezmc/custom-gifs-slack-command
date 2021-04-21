@@ -1,9 +1,11 @@
 const { join } = require('path')
 
-const gifBlock = (chosenGif, hostname) => {
+const config = require('../config')
+
+const gifBlock = (chosenGif) => {
   return {
     type: 'image',
-    image_url: hostname + join('/gifs', encodeURI(chosenGif.path)),
+    image_url: 'https://' + join(config.gifsServer, encodeURI(chosenGif.path)),
     alt_text: `${chosenGif.category} / ${chosenGif.subcategory} / ${chosenGif.name}`,
     title: {
       type: 'plain_text',
@@ -21,7 +23,7 @@ const errorReply = (message) => {
 }
 
 module.exports = {
-  confirmGif(searchTerm, chosenGif, hostname, previousGifs = []) {
+  confirmGif(searchTerm, chosenGif, previousGifs = []) {
     return {
       replace_original: true,
       response_type: 'ephemeral',
@@ -34,7 +36,7 @@ module.exports = {
             emoji: true,
           },
         },
-        gifBlock(chosenGif, hostname),
+        gifBlock(chosenGif),
         {
           type: 'actions',
           elements: [
@@ -74,13 +76,13 @@ module.exports = {
     }
   },
 
-  postGif(username, chosenGif, hostname) {
+  postGif(username, chosenGif) {
     return {
       response_type: 'in_channel',
       replace_original: false,
       username,
       //icon_emoji:
-      blocks: [gifBlock(chosenGif, hostname)],
+      blocks: [gifBlock(chosenGif)],
     }
   },
 

@@ -1,12 +1,16 @@
-const { promises: fs } = require('fs')
 const { join } = require('path')
 const { inspect } = require('util')
 
+const axios = require('axios')
 const log = require('debug-level').log('custom-gifs-slack:gifs')
 const Fuse = require('fuse.js')
-const glob = require('glob-promise')
 
-const categoryTags = require('./gifs/categories.js')
+const NodeCache = require('node-cache')
+const gifsCache = new NodeCache({
+  stdTTL: 30 * 60,
+  checkperiod: 5 * 60,
+  useClones: false,
+})
 
 const fuseOptions = {
   // isCaseSensitive: false,
@@ -45,89 +49,49 @@ const fuseOptions = {
   ],
 }
 
-const checkForBigGifs = (root, gifsInfo) => {
-  const tasks = gifsInfo.map((gifInfo) =>
-    fs.stat(join(root, gifInfo.path)).then((stats) => {
-      return {
-        gifInfo,
-        stats,
-      }
-    })
-  )
+const checkForBigGifs = (gifsInfo) => {
+  const bigGifs = gifsInfo.filter((gif) => gif.size > 2 * 1024 * 1024)
 
-  Promise.all(tasks).then((values) => {
-    const bigGifs = values.filter((file) => file.stats.size > 2 * 1024 * 1024)
+  bigGifs.forEach((gif) => {
+    const sizeMB = gif.size / (1024 * 1024)
+    const roundedSizeMB = Math.round(sizeMB * 100) / 100
 
-    bigGifs.forEach((file) => {
-      const sizeMB = file.stats.size / (1024 * 1024)
-      const roundedSizeMB = Math.round(sizeMB * 100) / 100
-
-      if (sizeMB > 10) {
-        return log.error(
-          `${file.gifInfo.path} is over 10MB at ${roundedSizeMB}MB.`,
-          `It's unlikely to display at all, it's suggested that you compress it.`
-        )
-      }
-
-      log.warn(
-        `${file.gifInfo.path} is over 2MB at ${roundedSizeMB}MB.`,
-        `It won't auto-expand on slack, it's suggested that you compress it.`
+    if (sizeMB > 10) {
+      return log.error(
+        `${gif.path} is over 10MB at ${roundedSizeMB}MB.`,
+        `It's unlikely to display at all, it's suggested that you compress it.`
       )
-    })
+    }
+
+    log.warn(
+      `${gif.path} is over 2MB at ${roundedSizeMB}MB.`,
+      `It won't auto-expand on slack, it's suggested that you compress it.`
+    )
   })
 }
 
-const sentCategoryWarnings = {}
-const parseGif = (root, gifFullPath) => {
-  const gifPath = gifFullPath.replace(root + '/', '')
-  const [folder, subfolder, ...name] = gifPath.split('/') // only consider the last two folders
-
-  const category = folder
-  let subcategory = subfolder
-
-  // Subfolders are optional
-  if (!name.length) {
-    name.push(subfolder)
-    subcategory = undefined
+// TO-DO: Basic caching and cache busting of this
+let gifsInfo
+const loadsGifs = async (gifsServer) => {
+  if (gifsInfo) {
+    return gifsInfo
   }
 
-  const categoryText = category.replaceAll('-', ' ')
-  const subCategoryText = (subcategory || '').replaceAll('-', ' ')
+  const metaURL = `https://${join(gifsServer, 'meta.json')}`
+  log.info(`Loading gifs from ${metaURL}`)
 
-  if (!categoryTags[category]?.length && !sentCategoryWarnings[category]) {
-    log.warn(`Category ${category} doesn't have any tags in categories.json`)
-    sentCategoryWarnings[category] = true
-  }
-  if (
-    subcategory &&
-    !categoryTags[subcategory]?.length &&
-    !sentCategoryWarnings[subcategory]
-  ) {
-    log.warn(
-      `Subcategory ${subcategory} doesn't have any tags in categories.json`
+  // To-do: Error handling
+  try {
+    const { data } = await axios.get(metaURL)
+    gifsInfo = data.gifs
+  } catch (error) {
+    log.fatal(error)
+    throw new Error(
+      `Request to ${metaURL} failed, please check your server path`
     )
-    sentCategoryWarnings[subcategory] = true
   }
 
-  return {
-    name: name
-      .join(' ')
-      .replace('.gif', '')
-      .replaceAll(/[^A-z']/g, ' '),
-    path: gifPath,
-    category: categoryText,
-    categoryTags: categoryTags[category],
-    subcategory: subCategoryText,
-    subcategoryTags: categoryTags[subcategory] || [],
-  }
-}
-
-const loadsGifs = async (path) => {
-  log.info('Looking for gifs in ', path)
-  const gifs = await glob('/**/*.gif', { root: path })
-  const gifsInfo = gifs.map(parseGif.bind(this, path))
-
-  checkForBigGifs(path, gifsInfo)
+  checkForBigGifs(gifsInfo)
 
   log.info(`Loaded ${gifsInfo.length} gifs`)
   log.debug(
@@ -139,26 +103,40 @@ const loadsGifs = async (path) => {
 }
 
 module.exports = class Gifs {
-  constructor(path) {
-    this.path = path
+  constructor(gifsServer) {
+    this.gifsServer = gifsServer
 
     this.getGifsAndSearcher()
   }
 
   async getGifsAndSearcher() {
-    if (this.gifs && this.fuse) {
-      return {
-        gifs: this.gifs,
-        fuse: this.fuse,
-      }
+    let gifs = gifsCache.get('gifs')
+    let fuse = gifsCache.get('fuse')
+
+    if (!gifs || !fuse) {
+      gifs = await loadsGifs(this.gifsServer)
+      fuse = new Fuse(gifs, fuseOptions)
+
+      gifsCache.set('gifs', gifs)
+      gifsCache.set('fuse', fuse)
+      gifsCache.set('checked-recently', true, 5 * 60)
     }
 
-    this.gifs = await loadsGifs(this.path)
-    this.fuse = new Fuse(this.gifs, fuseOptions)
+    // Background request to update gifs
+    else if (!gifsCache.get('checked-recently')) {
+      log.info(`Making background request to update gifs`)
+
+      gifsCache.set('checked-recently', true, 5 * 60)
+
+      loadsGifs(this.gifsServer).then((gifs) => {
+        gifsCache.set('gifs', gifs)
+        gifsCache.set('fuse', new Fuse(gifs, fuseOptions))
+      })
+    }
 
     return {
-      gifs: this.gifs,
-      fuse: this.fuse,
+      gifs,
+      fuse,
     }
   }
 
