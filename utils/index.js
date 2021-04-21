@@ -23,14 +23,4 @@ module.exports = {
       (num) => ((scaledMax - scaledMin) * (num - min)) / (max - min) + scaledMin
     )
   },
-
-  /**
-   * Loop over an array of objects and group them by the passed key
-   */
-  groupBy: (xs, key) => {
-    return xs.reduce(function (rv, x) {
-      ;(rv[x[key]] = rv[x[key]] || []).push(x)
-      return rv
-    }, {})
-  },
 }
