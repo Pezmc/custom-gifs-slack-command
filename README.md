@@ -8,13 +8,13 @@
 
 ## Usage
 
-1. [Setup the Repo](#setup-the-repo)
+1. [Setup Gif Server](#setup-gif-server)
 1. [Deploy somewhere](#deploy-somewhere)
 1. [Configure Slack](#configure-slack)
 1. [Try it out](#try-it-out)
 1. [Add some extra gifs](#add-some-extra-gifs)
 
-### Gif Server
+### Setup Gif Server
 
 Before you can use the slack command, you need a HTTP server that serves some gifs and a meta.json containing information about them.
 
@@ -24,7 +24,7 @@ Once that's set up and you have the URL of your server, follow the next steps!
 
 ### Deploy Somewhere
 
-Deploy the code from this repo to a server, it comes pre-configured for Heroku
+Deploy the code from this repo to a server, it comes ready to use with Heroku
 
 ```bash
 heroku create
@@ -84,3 +84,7 @@ You should see an interactive block where you can send, search again, or cancel.
 If you head directly to your hosted instance, it'll link you to your gif server to see all the loaded gifs.
 
 For Heroku that would be `http://[your-instance-name].herokuapp.com/`
+
+### Add some extra gifs
+
+Head back to your gifs repo set-up in step 1 to add more gifs, they'll show up in Slack about five minutes after deploy.
