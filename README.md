@@ -1,10 +1,10 @@
-# Your Own Custom Gif Search for Slack
+# Custom Gif Search for Slack
 
 > Allows you to have your own collection of gifs that you can search and post to slack with a simple command.
 
-![Typing the custom command to start a search](./trigger.png)
+![Typing the custom command to start a search](docs/trigger.png)
 
-![Seeing the results of the search](./searching.png)
+![Seeing the results of the search](docs/searching.png)
 
 ## Usage
 
@@ -14,9 +14,13 @@
 1. [Try it out](#try-it-out)
 1. [Add some extra gifs](#add-some-extra-gifs)
 
-### Setup the Repo
+### Gif Server
 
-Either fork or use this repo as a template.
+Before you can use the slack command, you need a HTTP server that serves some gifs and a meta.json containing information about them.
+
+You can use https://github.com/Pezmc/custom-gifs-gif-repo to host such a server using GitHub Pages.
+
+Once that's set up and you have the URL of your server, follow the next steps!
 
 ### Deploy Somewhere
 
@@ -42,7 +46,7 @@ git push heroku main
 
 1. Go back to the app settings and click on Slash Commands.
 1. Click the 'Create New Command' button and fill in the following:
-   - Command: `/gifs`
+   - Command: `/gif`
    - Request URL: Your server URL + `/command`
    - Short description: `Search for a gif`
    - Usage hint: `[search terms]`
@@ -57,9 +61,12 @@ If you're using Heroku, your URL will be something like: `http://[your-instance-
 
 #### Set Your Credentials
 
-1. Set the following environment variables to `.env` (see `.env.sample`):
+1. Set the following environment variables to `.env` (see `.env.example`):
    - `SLACK_SIGNING_SECRET`: Your app's Signing Secret (available on the **Basic Information** page)
-   - For Heroku you'll need to use `heroku config:set SLACK_SIGNING_SECRET=<your-secret>`
+   - `GIFS_SERVER`: The URL to your gifs server (you can use GitHub Pages)
+   - For Heroku you'll need to use
+     - `heroku config:set SLACK_SIGNING_SECRET=<your-secret>`
+     - `heroku config:set GIFS_SERVER=your-server.github.io/and-repo/`
 1. If you're running the app locally, run the app (`npm start`)
 
 ### Try It Out
@@ -72,41 +79,8 @@ Head to your Slack workspace and type the Slash command you setup above, for exa
 
 You should see an interactive block where you can send, search again, or cancel.
 
-![](./docs/how-it-looks.png)
+![](docs/how-it-looks.png)
 
-If you head directly to your hosted instance, you can see a list of all the loaded gifs.
+If you head directly to your hosted instance, it'll link you to your gif server to see all the loaded gifs.
 
 For Heroku that would be `http://[your-instance-name].herokuapp.com/`
-
-### Add some extra gifs
-
-> Important: Gifs over 2MB won't auto-expand in Slack, and gifs that are too large (~10MB+ won't load at all).
-
-The gifs are organised into folders and subfolders under `gifs/`, only the deepest two folders are considered when searching.
-
-This repo comes with some examples, and shows how you can nest folders to make searching easier.
-
-When searching for a gif, the name is matched first, followed by the subcategory, then any additional subcategory tags from `gifs/categories.js`, then the category and finally the category tags.
-
-For example:
-
-```
-gifs/happy/clap/my-image.gif - will match my image, followed by clap (and tags) then happy (and tags)
-gifs/happy/laughing.gif - will match laughing, followed by happy (and tags)
-```
-
-You can either add your gifs under the pre-existing folders, or, since only the last two folders are considered, namespace them entirely:
-
-```
-gifs/custom/happy/clap/my-image.gif - matches image, clap (and tags), then happy (and tags)
-gifs/custom/happy/laughing.gif - matches laughing then happy (and tags), and custom (and tags if any set)
-gifs/custom/my-gif.gif - matches my gif, then custom (and tags if set)
-```
-
-#### Extra Tagging
-
-The tagging metadata file is found in `gifs/categories.js`, and maps category and subcategory names to extra words or phrases that will match.
-
-This means that the "yes" folder for example, also matches for "affirmative, ok, okay" etc...
-
-Subcategories and categories are looked up based on the deepest and second deepest folder, and use the same list. Meaning you can namespace your gifs if you'd like.
