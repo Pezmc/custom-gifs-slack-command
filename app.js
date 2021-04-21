@@ -16,7 +16,7 @@ app.use(bodyParser.json({ verify: rawBodyBuffer }))
 
 app.get('/', async (req, res) => {
   res.send(
-    `You're likely looking for <a href="https://${config.gifServer}">${config.gifServer}</a>`
+    `You're likely looking for <a href="https://${config.gifsServer}">${config.gifsServer}</a>`
   )
 })
 

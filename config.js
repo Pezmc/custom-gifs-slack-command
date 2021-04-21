@@ -16,6 +16,7 @@ module.exports = (function () {
 
   return {
     gifs,
+    gifsServer: process.env.GIFS_SERVER,
     port: process.env.PORT || 5000,
     slackSigningSecret: process.env.SLACK_SIGNING_SECRET,
   }
