@@ -33,9 +33,7 @@ slack.post('/command', async (req, res) => {
   log.info(`Chose gif ${chosenGif.path} for "${text}"`)
   log.debug('Gif details', chosenGif)
 
-  const hostname = req.protocol + '://' + req.get('host')
-
-  return res.send(payloads.confirmGif(text, chosenGif, hostname))
+  return res.send(payloads.confirmGif(text, chosenGif))
 })
 
 /*
@@ -51,9 +49,8 @@ slack.post('/request', async (req, res) => {
 
   // Parse the payload
   const { actions, ...payload } = JSON.parse(req.body.payload)
-  const hostname = req.protocol + '://' + req.get('host')
 
-  actions.forEach(requestHandler.bind(this, hostname, { ...payload }))
+  actions.forEach(requestHandler.bind(this, { ...payload }))
 
   // Ack the request
   res.send('')
