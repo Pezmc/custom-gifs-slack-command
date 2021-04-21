@@ -31,6 +31,7 @@
     "glob": "^7.1.6",
     "glob-promise": "^4.1.0",
     "morgan": "^1.10.0",
+    "node-cache": "^5.1.2",
     "tsscmp": "^1.0.6",
     "weighted-random": "^0.1.0"
   },

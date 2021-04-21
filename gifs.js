@@ -5,6 +5,13 @@ const axios = require('axios')
 const log = require('debug-level').log('custom-gifs-slack:gifs')
 const Fuse = require('fuse.js')
 
+const NodeCache = require('node-cache')
+const gifsCache = new NodeCache({
+  stdTTL: 30 * 60,
+  checkperiod: 5 * 60,
+  useClones: false,
+})
+
 const fuseOptions = {
   // isCaseSensitive: false,
   includeScore: true,
@@ -103,19 +110,33 @@ module.exports = class Gifs {
   }
 
   async getGifsAndSearcher() {
-    if (this.gifs && this.fuse) {
-      return {
-        gifs: this.gifs,
-        fuse: this.fuse,
-      }
+    let gifs = gifsCache.get('gifs')
+    let fuse = gifsCache.get('fuse')
+
+    if (!gifs || !fuse) {
+      gifs = await loadsGifs(this.gifsServer)
+      fuse = new Fuse(gifs, fuseOptions)
+
+      gifsCache.set('gifs', gifs)
+      gifsCache.set('fuse', fuse)
+      gifsCache.set('checked-recently', true, 5 * 60)
     }
 
-    this.gifs = await loadsGifs(this.gifsServer)
-    this.fuse = new Fuse(this.gifs, fuseOptions)
+    // Background request to update gifs
+    else if (!gifsCache.get('checked-recently')) {
+      log.info(`Making background request to update gifs`)
+
+      gifsCache.set('checked-recently', true, 5 * 60)
+
+      loadsGifs(this.gifsServer).then((gifs) => {
+        gifsCache.set('gifs', gifs)
+        gifsCache.set('fuse', new Fuse(gifs, fuseOptions))
+      })
+    }
 
     return {
-      gifs: this.gifs,
-      fuse: this.fuse,
+      gifs,
+      fuse,
     }
   }
 
