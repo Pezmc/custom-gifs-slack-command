@@ -36,11 +36,8 @@ git push heroku main
 1. Create an app at [https://api.slack.com/apps](https://api.slack.com/apps)
 1. Add a Slash command
 1. Enable Interactive components
-1. Navigate to the **OAuth & Permissions** page and select the following bot token scopes:
-   - `commands`
-   - `chat:write`
-   - `chat:write.customize`
-1. Click 'Save Changes' and install the app (You should get an OAuth access token after the installation)
+1. Set Slack Permissions
+1. Set Your Credentials
 
 #### Add a Slash Command
 
@@ -58,6 +55,16 @@ If you're using Heroku, your URL will be something like: `http://[your-instance-
 1. Go back to the app settings and click on Interactive Components.
 1. Set the Request URL to your server URL + `/request`.
 1. Save the change.
+
+#### Set Slack Permissions
+
+Navigate to the **OAuth & Permissions** page and select the following bot token scopes:
+
+- `commands`
+- `chat:write`
+- `chat:write.customize`
+
+Click 'Save Changes' and install the app (You should get an OAuth access token after the installation)
 
 #### Set Your Credentials
 
