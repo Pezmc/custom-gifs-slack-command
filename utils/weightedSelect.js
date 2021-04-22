@@ -9,17 +9,18 @@ const weightedRandom = require('weighted-random')
 module.exports = (gifs) => {
   const scores = gifs.map((gif) => gif.score)
 
-  // What position does each score first appear
-  const ranks = gifs.map((gif) => scores.indexOf(gif.score) + 1)
+  // Lowest scores, are worth the most "weight"
+  const reversedScores = scores.reverse()
 
-  // Inverse the ranks
-  const maxRank = Math.max(...ranks) + 1
-  const weights = ranks.map((rank) => maxRank - rank)
-  log.debug('Ranks', ranks)
-  log.debug('Normalized ranks', weights)
+  // What position does each score first appear
+  const weights = gifs.map((gif) => reversedScores.lastIndexOf(gif.score) + 1)
+
+  for (const key in weights) {
+    gifs[key].weight = weights[key]
+  }
+  log.debug('Gifs with weights', gifs)
 
   const chosenIndex = weightedRandom(weights)
-
   log.debug('Chose gif index', chosenIndex)
 
   return gifs[chosenIndex].item
