@@ -9,12 +9,15 @@ const handleSendGif = async function (gifPath, response_url, user) {
   const chosenGif = await config.gifs.findByPath(gifPath)
   if (!chosenGif) {
     log.warn(`Couldn't find a gif with a path matching ${gifPath}`)
+    config.logger?.logSend({ gifPath, found: false })
     return await axios.post(response_url, payloads.noMatchForPath(gifPath))
   }
 
   axios.post(response_url, payloads.deleteMessage())
 
   await axios.post(response_url, payloads.postGif(user.username, chosenGif))
+
+  config.logger?.logSend({ gifPath })
 }
 
 const handleGetNewGif = async function (value, response_url) {
@@ -30,6 +33,11 @@ const handleGetNewGif = async function (value, response_url) {
     log.info(
       `No other matches found for "${searchTerm}" in "${category ?? 'all'}"`
     )
+    config.logger?.logSearch({
+      term: searchTerm,
+      category,
+      previousGifs: lastGifs,
+    })
     return await axios.post(
       response_url,
       payloads.noMatches(searchTerm, category, lastGifs)
@@ -42,6 +50,14 @@ const handleGetNewGif = async function (value, response_url) {
     `Chose gif ${chosenGif.path} for "${searchTerm}" in ${category ?? 'all'}`
   )
   log.debug('Gif details', chosenGif)
+
+  config.logger?.logSearch({
+    term: searchTerm,
+    category,
+    previousGifs: lastGifs,
+    results: remainingMatches,
+    selectedGif: chosenGif,
+  })
 
   axios.post(
     response_url,

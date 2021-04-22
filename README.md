@@ -73,15 +73,22 @@ Navigate to the **OAuth & Permissions** page and select the following bot token 
 
 Click 'Save Changes' and install the app (You should get an OAuth access token after the installation)
 
-#### Set Your Credentials
+#### Set Your Environment Variables
 
-1. Set the following environment variables to `.env` (see `.env.example`):
-   - `SLACK_SIGNING_SECRET`: Your app's Signing Secret (available on the **Basic Information** page)
-   - `GIFS_SERVER`: The URL to your gifs server (you can use GitHub Pages)
-   - For Heroku you'll need to use
-     - `heroku config:set SLACK_SIGNING_SECRET=<your-secret>`
-     - `heroku config:set GIFS_SERVER=your-server.github.io/and-repo/`
-1. If you're running the app locally, run the app (`npm start`)
+Set the following environment variables to `.env` (see `.env.example`):
+
+- `SLACK_SIGNING_SECRET`: Your app's Signing Secret (available on the **Basic Information** page)
+- `GIFS_SERVER`: The URL to your gifs server (you can use [GitHub Pages](https://github.com/Pezmc/custom-gifs-gif-repo))
+- And optionally:
+  - `DATABASE_URL`: A fully qualified Postgres Database URL (automatically provided on Heroku with the Postgres addon)
+  - `ADMIN_SECRET`: A secret used to access the debug page
+- For Heroku you'll need to use:
+  - `heroku config:set SLACK_SIGNING_SECRET=<your-secret>`
+  - `heroku config:set GIFS_SERVER=your-server.github.io/`
+  - `heroku config:set ADMIN_SECRET=a-good-secret-goes-here`
+  - `heroku addons:create heroku-postgresql:hobby-dev`
+
+If you're running the app locally, run the app (`yarn start`)
 
 ### Try It Out
 

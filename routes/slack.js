@@ -1,4 +1,4 @@
-const log = require('debug-level').log('custom-gifs-slack:slack')
+const log = require('debug-level').log('custom-gifs-slack:slack-route')
 const slack = require('express').Router()
 
 const config = require('../config')
@@ -28,6 +28,7 @@ slack.post('/command', async (req, res) => {
     log.info(
       `No matches found for "${text}" in the "${category ?? 'all'}" category`
     )
+    config.logger?.logSearch({ term: text, category })
     return res.send(payloads.noMatches(text, category))
   }
 
@@ -35,6 +36,13 @@ slack.post('/command', async (req, res) => {
   const chosenGif = selectedWeightedRandomGif(bestMatches)
   log.info(`Chose gif ${chosenGif.path} for "${text}" in ${category ?? 'all'}`)
   log.debug('Gif details', chosenGif)
+
+  config.logger?.logSearch({
+    term: text,
+    category,
+    results: bestMatches,
+    selectedGif: chosenGif,
+  })
 
   return res.send(payloads.confirmGif(text, chosenGif, category))
 })

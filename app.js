@@ -22,6 +22,7 @@ app.get('/', async (req, res) => {
 
 // Main routes
 app.use(require('./routes/slack'))
+app.use(require('./routes/debug'))
 
 // Error handler
 app.use(function (err, req, res, _next) {
