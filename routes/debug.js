@@ -83,7 +83,12 @@ debug.get('/debug', async (req, res) => {
     <h1>Most Popular</h1>
     <h2>Searches</h2>
     <table>
-      <tr><th width="40%">Search Term</th><th>Category</th><th>Searches</th></tr>
+      <tr>
+        <th width="40%">Search Term</th>
+        <th width="20%">Category</th>
+        <th>Searches</th>
+        <th>Results</th>
+      </tr>
       ${popularSearches
         .map(
           (row) =>
@@ -91,6 +96,7 @@ debug.get('/debug', async (req, res) => {
             <td>${row.term}</td>
             <td>${row.category}</td>
             <td>${row.count}</td>
+            <td>${row.result_count}</td>
           </tr>`
         )
         .join('\n')}
@@ -98,7 +104,11 @@ debug.get('/debug', async (req, res) => {
 
     <h2>Gifs</h2>
     <table>
-      <tr><th width="40%">Gif</th><th>Matched?</th><th>Posts</th></tr>
+      <tr>
+        <th width="40%">Gif</th>
+        <th width="20%">Matched?</th>
+        <th>Posts</th>
+      </tr>
       ${popularGifs
         .map(
           (row) =>
@@ -114,7 +124,11 @@ debug.get('/debug', async (req, res) => {
     <h2>With No Results</h2>
     <h3>Searches</h3>
     <table>
-      <tr><th width="40%">Gif</th><th>Category</th><th>Posts</th></tr>
+      <tr>
+        <th width="40%">Gif</th>
+        <th width="20%">Category</th>
+        <th>Posts</th>
+      </tr>
       ${searchesWithoutResults
         .map(
           (row) =>
@@ -131,7 +145,7 @@ debug.get('/debug', async (req, res) => {
     <table>
       <tr>
         <th width="40%">Term</th>
-        <th>Category</th>
+        <th width="20%">Category</th>
         <th>Rejected Matches</th>
         <th>Count</th>
       </tr>

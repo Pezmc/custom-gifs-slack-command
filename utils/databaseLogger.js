@@ -101,7 +101,7 @@ module.exports = class DatabaseLogger {
 
   async getPopularSearches() {
     const query = `
-      SELECT term, category, COUNT(term) AS count
+      SELECT term, category, COUNT(term) AS count, MAX(result_count) as result_count
       FROM searches
       GROUP BY term, category
       ORDER BY count DESC
