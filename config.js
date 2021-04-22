@@ -30,7 +30,11 @@ module.exports = (function () {
   if (!process.env.DATABASE_URL) {
     log.warn(`DATABASE_URL is not set, will not log searches to database`)
   } else {
-    logger = new DatabaseLogger(process.env.DATABASE_URL)
+    const ON_HEROKU = !!process.env.DYNO
+    logger = new DatabaseLogger({
+      url: process.env.DATABASE_URL,
+      ssl: ON_HEROKU,
+    })
   }
 
   return {

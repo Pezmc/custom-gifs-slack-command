@@ -3,12 +3,17 @@ const log = require('debug-level').log('custom-gifs-slack:database-logger')
 const { Client } = require('pg')
 
 module.exports = class DatabaseLogger {
-  constructor(databaseUrl) {
-    this.db = new Client({
-      connectionString: databaseUrl,
-    })
-
+  constructor({ url, ssl }) {
     try {
+      this.db = new Client({
+        connectionString: url,
+        ssl: ssl
+          ? {
+              rejectUnauthorized: false,
+            }
+          : false,
+      })
+
       this.connectAndInit()
       this.db.connect()
     } catch (error) {
