@@ -20,20 +20,23 @@ slack.post('/command', async (req, res) => {
 
   // Extract the slash command text
   const { text } = req.body
+  const { category } = req.query
 
   // Find some gifs
-  const bestMatches = await config.gifs.bestMatches(text)
+  const bestMatches = await config.gifs.bestMatches(text, category)
   if (!bestMatches.length) {
-    log.info(`No matches found for "${text}"`)
-    return res.send(payloads.noMatches(text))
+    log.info(
+      `No matches found for "${text}" in the "${category ?? 'all'}" category`
+    )
+    return res.send(payloads.noMatches(text, category))
   }
 
   // Choose the one to send
   const chosenGif = selectedWeightedRandomGif(bestMatches)
-  log.info(`Chose gif ${chosenGif.path} for "${text}"`)
+  log.info(`Chose gif ${chosenGif.path} for "${text}" in ${category ?? 'all'}`)
   log.debug('Gif details', chosenGif)
 
-  return res.send(payloads.confirmGif(text, chosenGif))
+  return res.send(payloads.confirmGif(text, chosenGif, category))
 })
 
 /*

@@ -50,6 +50,13 @@ git push heroku main
 
 If you're using Heroku, your URL will be something like: `http://[your-instance-name].herokuapp.com/command`.
 
+You can optionally, add extra Slack command(s) that only search within certain folders (matching against all folders in the gifs path) by adding a query string in the format `?category=folderName` to the end of the Request URL, for example:
+
+- Command: `/sadgif`
+- Request URL: Your server URL + `/command?category=sad`
+- Short description: `Search for a sad gif`
+- Usage hint: `[search terms]`
+
 #### Enable Interactive Components
 
 1. Go back to the app settings and click on Interactive Components.

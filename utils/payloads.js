@@ -23,7 +23,7 @@ const errorReply = (message) => {
 }
 
 module.exports = {
-  confirmGif(searchTerm, chosenGif, previousGifs = []) {
+  confirmGif(searchTerm, chosenGif, category = undefined, previousGifs = []) {
     return {
       replace_original: true,
       response_type: 'ephemeral',
@@ -59,6 +59,7 @@ module.exports = {
               value: JSON.stringify({
                 searchTerm,
                 lastGifs: [...previousGifs, chosenGif.path],
+                category,
               }),
               action_id: 'get_new_gif',
             },
@@ -86,11 +87,12 @@ module.exports = {
     }
   },
 
-  noMatches(searchTerm, previousGifs = []) {
+  noMatches(searchTerm, category = undefined, previousGifs = []) {
+    const adjective = previousGifs.length ? 'other' : 'good'
+    const categoryInfo = category ? ` in the "${category}" category` : ''
+
     return errorReply(
-      `Sorry, no ${
-        previousGifs.length ? 'other' : 'good'
-      } matches were found for '${searchTerm}', try another search!`
+      `Sorry, no ${adjective} matches were found for '${searchTerm}'${categoryInfo}, try another search!`
     )
   },
 

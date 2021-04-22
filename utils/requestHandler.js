@@ -18,28 +18,35 @@ const handleSendGif = async function (gifPath, response_url, user) {
 }
 
 const handleGetNewGif = async function (value, response_url) {
-  const { searchTerm, lastGifs } = JSON.parse(value)
+  const { searchTerm, lastGifs, category } = JSON.parse(value)
 
   // Find some gifs
   log.debug(`Searching for other gifs matching "${searchTerm}"`)
-  const bestMatches = await config.gifs.bestMatches(searchTerm)
+  const bestMatches = await config.gifs.bestMatches(searchTerm, category)
   const remainingMatches = bestMatches.filter(
     (gif) => !lastGifs.includes(gif.item.path)
   )
   if (!remainingMatches.length) {
-    log.info(`No other matches found for "${searchTerm}"`)
+    log.info(
+      `No other matches found for "${searchTerm}" in "${category ?? 'all'}"`
+    )
     return await axios.post(
       response_url,
-      payloads.noMatches(searchTerm, lastGifs)
+      payloads.noMatches(searchTerm, category, lastGifs)
     )
   }
 
   // Choose the one to send
   const chosenGif = selectedWeightedRandomGif(remainingMatches)
-  log.info(`Chose gif ${chosenGif.path} for "${searchTerm}"`)
+  log.info(
+    `Chose gif ${chosenGif.path} for "${searchTerm}" in ${category ?? 'all'}`
+  )
   log.debug('Gif details', chosenGif)
 
-  axios.post(response_url, payloads.confirmGif(searchTerm, chosenGif, lastGifs))
+  axios.post(
+    response_url,
+    payloads.confirmGif(searchTerm, chosenGif, category, lastGifs)
+  )
 }
 
 module.exports = async function ({ user, response_url }, action) {

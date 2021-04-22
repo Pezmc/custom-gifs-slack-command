@@ -76,7 +76,7 @@ const checkForBigGifs = (gifsInfo) => {
 
 // TO-DO: Basic caching and cache busting of this
 let gifsInfo
-const loadsGifs = async (gifsServer) => {
+const loadGifs = async (gifsServer) => {
   if (gifsInfo) {
     return gifsInfo
   }
@@ -117,16 +117,13 @@ module.exports = class Gifs {
     this.getGifs() // pre-fetch on init
   }
 
-  async getGifsAndSearcher() {
+  async getGifs() {
     let gifs = gifsCache.get('gifs')
-    let fuse = gifsCache.get('fuse')
 
-    if (!gifs || !fuse) {
-      gifs = await loadsGifs(this.gifsServer)
-      fuse = new Fuse(gifs, fuseOptions)
+    if (!gifs) {
+      gifs = await loadGifs(this.gifsServer)
 
       gifsCache.set('gifs', gifs)
-      gifsCache.set('fuse', fuse)
       markGifsRecentlyLoaded()
     }
 
@@ -137,33 +134,43 @@ module.exports = class Gifs {
       // Optimistic to avoid running multiple times
       markGifsRecentlyLoaded()
 
-      loadsGifs(this.gifsServer).then((gifs) => {
+      loadGifs(this.gifsServer).then((gifs) => {
         gifsCache.set('gifs', gifs)
-        gifsCache.set('fuse', new Fuse(gifs, fuseOptions))
       })
     }
 
-    return {
-      gifs,
-      fuse,
-    }
+    return gifs
   }
 
-  async search(pattern) {
-    const { fuse } = await this.getGifsAndSearcher()
+  async search(pattern, category = undefined) {
+    let gifs = await this.getGifs()
+
+    if (category) {
+      // Considers all folders in path as a "category"
+      gifs = gifs.filter((gif) => {
+        const categories = gif.path.split('/').slice(0, -1)
+        return categories.includes(category)
+      })
+
+      log.debug(
+        `There are ${gifs.length} gifs in the subset matching ${category}`
+      )
+    }
+
+    const fuse = new Fuse(gifs, fuseOptions)
 
     return fuse.search(pattern)
   }
 
   async findByPath(path) {
-    const { gifs } = await this.getGifsAndSearcher()
+    const gifs = await this.getGifs()
 
     return gifs.find((gif) => gif.path === path)
   }
 
-  async bestMatches(searchTerm, threshold = 0.25) {
-    log.debug('Searching for', searchTerm)
-    const matches = await this.search(searchTerm)
+  async bestMatches(searchTerm, category = undefined, threshold = 0.25) {
+    log.debug('Searching for', searchTerm, category)
+    const matches = await this.search(searchTerm, category)
 
     const goodMatches = matches.filter((match) => match.score <= threshold)
 
