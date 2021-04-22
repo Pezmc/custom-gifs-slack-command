@@ -6,9 +6,13 @@ const log = require('debug-level').log('custom-gifs-slack:gifs')
 const Fuse = require('fuse.js')
 
 const NodeCache = require('node-cache')
+
+const REFRESH_GIFS_AFTER_SECONDS = 30 * 60
+const BACKGROUND_REFRESH_GIFS_AFTER_SECONDS = 5 * 60
+
 const gifsCache = new NodeCache({
-  stdTTL: 30 * 60,
-  checkperiod: 5 * 60,
+  stdTTL: REFRESH_GIFS_AFTER_SECONDS,
+  checkperiod: BACKGROUND_REFRESH_GIFS_AFTER_SECONDS,
   useClones: false,
 })
 
@@ -102,11 +106,15 @@ const loadsGifs = async (gifsServer) => {
   return gifsInfo
 }
 
+const markGifsRecentlyLoaded = () => {
+  gifsCache.set('checked-recently', true, BACKGROUND_REFRESH_GIFS_AFTER_SECONDS)
+}
+
 module.exports = class Gifs {
   constructor(gifsServer) {
     this.gifsServer = gifsServer
 
-    this.getGifsAndSearcher()
+    this.getGifs() // pre-fetch on init
   }
 
   async getGifsAndSearcher() {
@@ -119,14 +127,15 @@ module.exports = class Gifs {
 
       gifsCache.set('gifs', gifs)
       gifsCache.set('fuse', fuse)
-      gifsCache.set('checked-recently', true, 5 * 60)
+      markGifsRecentlyLoaded()
     }
 
     // Background request to update gifs
     else if (!gifsCache.get('checked-recently')) {
       log.info(`Making background request to update gifs`)
 
-      gifsCache.set('checked-recently', true, 5 * 60)
+      // Optimistic to avoid running multiple times
+      markGifsRecentlyLoaded()
 
       loadsGifs(this.gifsServer).then((gifs) => {
         gifsCache.set('gifs', gifs)
