@@ -78,12 +78,14 @@ Click 'Save Changes' and install the app (You should get an OAuth access token a
 Set the following environment variables to `.env` (see `.env.example`):
 
 - `SLACK_SIGNING_SECRET`: Your app's Signing Secret (available on the **Basic Information** page)
+- `SLACK_BOT_OAUTH_TOKEN`: Your app's oAuth token (available on the **Install App** page)
 - `GIFS_SERVER`: The URL to your gifs server (you can use [GitHub Pages](https://github.com/Pezmc/custom-gifs-gif-repo))
 - And optionally:
   - `DATABASE_URL`: A fully qualified Postgres Database URL (automatically provided on Heroku with the Postgres addon)
   - `ADMIN_SECRET`: A secret used to access the debug page
 - For Heroku you'll need to use:
   - `heroku config:set SLACK_SIGNING_SECRET=<your-secret>`
+  - `heroku config:set SLACK_BOT_OAUTH_TOKEN=<your-oauth-token>`
   - `heroku config:set GIFS_SERVER=your-server.github.io/`
   - `heroku config:set ADMIN_SECRET=a-good-secret-goes-here`
   - `heroku addons:create heroku-postgresql:hobby-dev`
