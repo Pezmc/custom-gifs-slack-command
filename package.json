@@ -22,7 +22,7 @@
     "package.json": "sort-package-json"
   },
   "dependencies": {
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "body-parser": "^1.19.0",
     "debug-level": "^2.0.2",
     "dotenv": "^8.2.0",
