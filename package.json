@@ -7,14 +7,14 @@
   "author": "Pez Cuckow",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "format:write": "yarn run format:write:js && prettier --write .",
     "format:write:js": "eslint --fix .",
     "lint": "yarn run lint:js && prettier --check .",
     "lint:js": "eslint .",
+    "prepare": "husky install",
     "start": "node app.js",
     "start:dev": "nodemon app.js",
-    "prepare": "husky install"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "lint-staged": {
     "*": "prettier --ignore-unknown --write",
@@ -22,38 +22,38 @@
     "package.json": "sort-package-json"
   },
   "dependencies": {
-    "axios": "^0.21.2",
-    "body-parser": "^1.19.0",
-    "debug-level": "^2.0.2",
-    "dotenv": "^8.2.0",
-    "express": "^4.17.1",
-    "fuse.js": "^6.4.6",
-    "glob": "^7.1.6",
-    "glob-promise": "^4.1.0",
+    "axios": "^0.27.2",
+    "body-parser": "^1.20.1",
+    "debug-level": "^2.1.2",
+    "dotenv": "^8.6.0",
+    "express": "^4.18.2",
+    "fuse.js": "^6.6.2",
+    "glob": "^7.2.3",
+    "glob-promise": "^4.2.2",
     "morgan": "^1.10.0",
     "node-cache": "^5.1.2",
-    "pg": "^8.6.0",
+    "pg": "^8.8.0",
     "tsscmp": "^1.0.6",
     "weighted-random": "^0.1.0"
   },
   "devDependencies": {
-    "eslint": "^7.23.0",
-    "eslint-config-prettier": "^8.1.0",
-    "eslint-plugin-import": "^2.22.1",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-import": "^2.26.0",
     "husky": "^6.0.0",
     "lint-staged": "^10.5.4",
-    "nodemon": "^2.0.7",
-    "prettier": "^2.2.1",
-    "sort-package-json": "^1.49.0"
+    "nodemon": "^2.0.20",
+    "prettier": "^2.7.1",
+    "sort-package-json": "^1.57.0"
   },
   "engines": {
-    "node": "^15.14.0",
+    "node": "^16.18.0",
     "yarn": "^1.22.10"
+  },
+  "volta": {
+    "node": "16.18.0"
   },
   "authors": [
     "Pez Cuckow <email@pezcuckow.com>"
-  ],
-  "volta": {
-    "node": "15.14.0"
-  }
+  ]
 }
