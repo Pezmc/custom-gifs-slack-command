@@ -1,4 +1,4 @@
-const log = require('debug-level').log('custom-gifs-slack:weighted-select')
+const log = require('debug-level').logger('custom-gifs-slack:weighted-select')
 
 const weightedRandom = require('weighted-random')
 

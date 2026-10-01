@@ -2,7 +2,7 @@ const { join } = require('path')
 const { inspect } = require('util')
 
 const axios = require('axios')
-const log = require('debug-level').log('custom-gifs-slack:gifs')
+const log = require('debug-level').logger('custom-gifs-slack:gifs')
 const Fuse = require('fuse.js')
 
 const NodeCache = require('node-cache')

@@ -1,4 +1,4 @@
-const log = require('debug-level').log('custom-gifs-slack:database-logger')
+const log = require('debug-level').logger('custom-gifs-slack:database-logger')
 
 const { Client } = require('pg')
 

@@ -1,4 +1,4 @@
-const log = require('debug-level').log('custom-gifs-slack:slack-route')
+const log = require('debug-level').logger('custom-gifs-slack:slack-route')
 const slack = require('express').Router()
 
 const config = require('../config')
