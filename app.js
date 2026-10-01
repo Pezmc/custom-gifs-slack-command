@@ -1,7 +1,7 @@
 require('dotenv').config()
 
 const bodyParser = require('body-parser')
-const log = require('debug-level').log('custom-gifs-slack')
+const log = require('debug-level').logger('custom-gifs-slack')
 const express = require('express')
 const logger = require('morgan')
 

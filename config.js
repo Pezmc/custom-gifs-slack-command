@@ -2,7 +2,7 @@ require('dotenv').config()
 
 const crypto = require('crypto')
 
-const log = require('debug-level').log('custom-gifs-slack:config')
+const log = require('debug-level').logger('custom-gifs-slack:config')
 
 const Gifs = require('./gifs')
 const DatabaseLogger = require('./utils/databaseLogger')

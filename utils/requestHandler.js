@@ -1,5 +1,5 @@
 const axios = require('axios')
-const log = require('debug-level').log('custom-gifs-slack:request-handler')
+const log = require('debug-level').logger('custom-gifs-slack:request-handler')
 
 const config = require('../config')
 const payloads = require('../utils/payloads')
