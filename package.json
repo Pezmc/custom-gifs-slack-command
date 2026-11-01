@@ -25,29 +25,29 @@
     "qs": "^6.16.0"
   },
   "dependencies": {
-    "axios": "^1.18.0",
-    "body-parser": "^2.3.0",
+    "axios": "^1.21.0",
+    "body-parser": "^2.4.0",
     "debug-level": "^4.1.1",
-    "dotenv": "^18.0.4",
-    "express": "^5.2.1",
+    "dotenv": "^18.0.9",
+    "express": "^5.3.0",
     "fuse.js": "^7.5.0",
     "morgan": "^1.12.1",
     "node-cache": "^5.1.2",
-    "pg": "^8.23.0",
+    "pg": "^8.23.1",
     "tsscmp": "^1.0.6",
     "weighted-random": "^0.1.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.5",
-    "eslint": "^9.39.5",
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.13.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
     "globals": "^17.13.0",
     "husky": "^9.1.7",
     "lint-staged": "^17.6.0",
     "nodemon": "^3.1.14",
-    "prettier": "^3.9.9",
-    "sort-package-json": "^4.0.0"
+    "prettier": "^3.9.10",
+    "sort-package-json": "^4.1.0"
   },
   "engines": {
     "node": ">=24",
